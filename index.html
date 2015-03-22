@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<meta name="description" content="Lexical analysis libraries for JavaScript" />
+	<meta name="keywords" content="python,lex,lexer,lexical,lexical analyzer,lexical analysis,libraries,javascript,js,python" />
+	<meta name="author" content="nutbread" />
+	<title>Lexical Analysis Libraries</title>
+	<link rel="shortcut icon" href="favicon.png" />
+	<link rel="stylesheet" href="style.css" />
+	<script src="script.js"></script>
+</head>
+<body>
+
+
+<div class="header_bar">
+	<div class="main main_no_overflow header">
+
+		<table class="header_table"><tbody>
+			<tr>
+				<td class="header_table_cell">
+					<div class="header_table_name">
+						<a class="header_table_name_user link_external link_author light_underline" href="https://nutbread.github.io/"><span>nutbread</span></a><span class="header_table_name_separator">/</span><a href="" class="header_table_name_title link_external link_title light_underline"><span>lex</span></a>
+					</div>
+				</td>
+				<td class="header_table_cell">
+					<div class="header_table_separator"></div>
+				</td>
+				<td class="header_table_cell header_table_cell_full">
+					<div class="header_table_description">
+						<div class="header_table_description_name">Lexical Analysis Libraries</div>
+						<div class="header_table_description_body">Simple lexical analysis libraries for JavaScript</div>
+					</div>
+				</td>
+				<td class="header_table_cell">
+					<a class="header_table_view_on_github link_external link_view_on_github light_nohover_color_hover" href="https://github.com/nutbread/lex">
+						<div class="header_table_view_on_github_line1">view on</div>
+						<div class="header_table_view_on_github_line2">github</div>
+					</a>
+				</td>
+			</tr>
+		</tbody></table>
+
+	</div>
+</div>
+<div class="main body">
+
+	<h1 id="about"><span class="hardlink_text">About<a class="hardlink" href="#about"></a></span></h1>
+	<p>
+		This is a set of lexical analizers for language tokenizing. Currently there are libraries for processing JavaScript with source code in JavaScript and Python 2/3.
+	</p>
+	<p>
+		It was primary written to address some edge case parsing issues found in several major applications (Notepad++, Firefox, Sublime Text, Github/Ace.) These cases usually involve regular expressions or sign-prefixed numbers.
+	</p>
+
+	<h4 id="downloads"><span class="hardlink_text">Downloads<a class="hardlink" href="#downloads"></a></span></h4>
+	<p>
+		<ul>
+			<li><a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexjs.js" target="_blank"><span>lexjs.js</span></a> &ndash; JavaScript source, can run on both node.js and browsers</li>
+			<li><a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexjs.py" target="_blank"><span>lexjs.py</span></a> &ndash; Python source, versions 2.x or 3.x should both work</li>
+		</ul>
+	</p>
+
+	<h1 id="usage"><span class="hardlink_text">Usage<a class="hardlink" href="#usage"></a></span></h1>
+	<p>
+		Using these libraries is as simple as importing, creating a <code>Lexer</code>, then repeatedly calling the <code>get_token</code> method until it returns <span class="colored_underline" title="or language equivalent"><code>null</code></span>.
+	</p>
+	<p>
+		<code>get_token</code> will otherwise return a <code>Token</code> object with 3 fields:
+	</p>
+	<p>
+		<ul>
+			<li><code>text</code> &ndash; the token string</li>
+			<li><code>type</code> &ndash; the type constant of the token</li>
+			<li>
+				<code>flags</code> &ndash; flags for the token<br />
+				<span class="light">Most flags are primarily used internally, but are occasionally useful outside the <code>Lexer</code></span>
+			</li>
+		</ul>
+	</p>
+	<p>
+		<h6 class="colored">JavaScript token type constants:</h6>
+		<code>INVALID</code>,
+		<code>KEYWORD</code>,
+		<code>LITERAL</code>,
+		<code>IDENTIFIER</code>,
+		<code>NUMBER</code>,
+		<code>STRING</code>,
+		<code>REGEX</code>,
+		<code>OPERATOR</code>,
+		<code>WHITESPACE</code>,
+		<code>COMMENT</code>
+	</p>
+	<p>
+		<h6><span class="colored">JavaScript token flags</span> (that can be useful outside the <code>Lexer</code>):</h6>
+		<code>FLAG_MEMBER</code>, <code class="light">// indicates the word is a member (identifier_word.<strong>member_word</strong>)</code><br />
+		<code>FLAG_VERSION_FUTURE</code>, <code class="light">// this keyword is a future reserved keyword</code><br />
+		<code>...</code> <code class="light">// Additional token flag constants can be found by opening the library's source</code>
+	</p>
+	<p>
+		For additional help, view some of <a class="link_codebase light_underline" href="https://github.com/nutbread/lex/tree/gh-pages/test" target="_blank"><span>these test files</span></a>, as examples are often more useful than wordy documentation.
+	</p>
+
+	<div class="top_margin js_on">
+		<h1 id="demo"><span class="hardlink_text">Demo<a class="hardlink" href="#demo"></a></span></h1>
+		<p>
+			This demo uses <code>lexjs.js</code> to lexify some source and testing files.
+		</p>
+		<p>
+			<div class="demo_options">
+				<a class="demo_option demo_option_selected" data-target="test/test1.js">test1.js</a><a class="demo_option" data-target="test/test2.js">test2.js</a><a class="demo_option" data-target="test/test3.js">test3.js</a><a class="demo_option" data-target="test/test4.js">test4.js</a><a class="demo_option" data-target="src/lexjs.js">lexjs.js</a><a class="demo_option" data-target="test/lexjs-test.js">lexjs-test.js</a><a class="demo_option" data-target="script.js">script.js</a>
+			</div>
+			<div class="demo_code codeblock codeblock_pre code_js"><div class="codeblock_inner demo_code_inner"><div class="demo_code_placeholder"></div></div></div>
+			<div class="demo_info">
+				<p>
+					A few reference images are included for <code>test1.js</code> for comparison of highlighting:<br />
+				</p>
+				<p><ul>
+					<li><a class="light_underline" href="images/test1-firefox-scratchpad.png" target="_blank"><span>Firefox scratchpad</span></a></li>
+					<li><a class="light_underline" href="images/test1-sublime-text.png" target="_blank"><span>Sublime Text</span></a></li>
+					<li><a class="light_underline" href="images/test1-notepad++.png" target="_blank"><span>Notepad++</span></a></li>
+					<li><a class="light_underline" href="images/test1-github-gist.png" target="_blank"><span>Github Gist</span></a></li>
+					<li><a class="light_underline" href="images/test1-github-gist-ace.png" target="_blank"><span>Github Gist (ACE editor)</span></a></li>
+					<li><a class="light_underline" href="images/test1-jsfiddle.png" target="_blank"><span>JSFiddle</span></a></li>
+				</ul></p>
+			</div>
+		</p>
+	</div>
+
+</div>
+
+
+</body>
+</html>
+
