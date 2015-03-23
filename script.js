@@ -148,26 +148,53 @@
 
 	var load_demo = (function () {
 		var target = null,
-			loaded = false;
+			scripts_loaded = {},
+			lex_loading = false,
+			lex = null;
 
-		var load_demo = function (url) {
-			// Load the script
-			if (!loaded) {
-				target = url;
-				script_load("src/lexjs.js", function () {
-					loaded = true;
-					load_demo(target);
+		var load_scripts = function (url, script) {
+			var script_name = "src/" + script + ".js";
+
+			// Already loaded
+			if (script in scripts_loaded && scripts_loaded[script] !== null) return true;
+
+			target = [ url , script ];
+
+			// Load lex
+			if (!lex_loading) {
+				lex_loading = true;
+				script_load("src/lex.js", function () {
+					lex = window.lex;
+					load_scripts(target[0], target[1]);
 				});
-				return;
+				return false;
 			}
-			target = null;
+
+			// Already loading
+			if (script in scripts_loaded) return false;
+
+			// Load script
+			scripts_loaded[script] = null;
+			script_load(script_name, function () {
+				var t = target;
+				target = null;
+				scripts_loaded[script] = window[script].gen(lex);
+				load_demo(t[0], t[1]);
+			});
+
+			// Now loading
+			return false;
+		};
+
+		var load_demo = function (url, script) {
+			// Load the script
+			if (!load_scripts(url, script)) return;
 
 			// Validate
 			var node = document.querySelector(".demo_code_inner"),
-				lexjs = window.lexjs,
 				xhr;
 
-			if (node === null || !lexjs) return;
+			if (node === null) return;
 
 			// Create XHR
 			try {
@@ -178,7 +205,7 @@
 				xhr.addEventListener("load", function () {
 					if (xhr.status == 200) {
 						var n;
-						node.innerHTML = GeneratorJS.generate(lexjs, xhr.responseText);
+						node.innerHTML = generator[script](lex, scripts_loaded[script], xhr.responseText);
 						if ((n = document.querySelector(".demo_code")) !== null) {
 							n.scrollLeft = 0;
 							n.scrollTop = 0;
@@ -193,7 +220,6 @@
 				if ((node = document.querySelector(".demo_code_placeholder")) !== null) {
 					node.classList.add("demo_code_placeholder_error");
 				}
-				return;
 			}
 		};
 
@@ -201,7 +227,7 @@
 
 	})();
 
-	var GeneratorJS = (function () {
+	var generator = (function () {
 
 		var re_xml_escape_char = /[<>&]/g,
 			re_xml_escape_char_ext = /[<>&\"\']/g,
@@ -221,9 +247,9 @@
 
 		var complete_line = function (line, line_pos) {
 			if (line_pos === 0) {
-				return '<div class="code_js_line code_js_line_empty"></div>';
+				return '<div class="code_line code_line_empty"></div>';
 			}
-			return '<div class="code_js_line">' + line + '</div>';
+			return '<div class="code_line">' + line + '</div>';
 		};
 
 		var format_default = function (node_class, text, line_pos) {
@@ -235,7 +261,7 @@
 			if (line_pos === 0 && (tab_count = /^\t*/.exec(text)[0].length) > 0) {
 				t = '';
 				for (i = 0; i < tab_count; ++i) {
-					t += '<span class="code_js_tab">\t</span>';
+					t += '<span class="code_tab">\t</span>';
 				}
 				t += xml_escape(text.substr(tab_count));
 			}
@@ -252,10 +278,10 @@
 				extra_class, m;
 
 			while ((m = re_escape_matcher.exec(text)) !== null) {
-				extra_class = (m[1] === undefined) ? " code_js_string_escape_invalid" : "";
+				extra_class = (m[1] === undefined) ? " code_string_escape_invalid" : "";
 
 				t += xml_escape(text.substr(start, m.index - start));
-				t += '<span class="code_js_string_escape' + extra_class + '">' + xml_escape(m[0]) + '</span>';
+				t += '<span class="code_string_escape' + extra_class + '">' + xml_escape(m[0]) + '</span>';
 
 				start = m.index + m[0].length;
 			}
@@ -272,7 +298,7 @@
 
 			while ((m = re_escape_matcher.exec(text)) !== null) {
 				t += xml_escape(text.substr(start, m.index - start));
-				t += '<span class="code_js_regex_escape">' + xml_escape(m[0]) + '</span>';
+				t += '<span class="code_regex_escape">' + xml_escape(m[0]) + '</span>';
 
 				start = m.index + m[0].length;
 			}
@@ -283,8 +309,8 @@
 		};
 
 		return {
-			generate: function (lexjs, input) {
-				var lexer = new lexjs.Lexer(input),
+			lexjs: function (lex, lex_d, input) {
+				var lexer = new lex.Lexer(lex_d, input),
 					source = '',
 					line = '',
 					line_pos = 0,
@@ -296,69 +322,71 @@
 					formatter = format_default;
 					node_class = "";
 
-					if (t.type === lexjs.KEYWORD) {
-						node_class = (text === "this") ? "code_js_this" : "code_js_keyword";
+					if (t.type === lex_d.KEYWORD) {
+						if ([ "true" , "false" , "null" ].indexOf(text) >= 0) {
+							node_class = "code_literal";
+						}
+						else {
+							node_class = (text === "this") ? "code_this" : "code_keyword";
+						}
 					}
-					else if (t.type === lexjs.LITERAL) {
-						node_class = "code_js_literal";
-					}
-					else if (t.type === lexjs.IDENTIFIER) {
-						if ((t.flags & lexjs.FLAG_MEMBER) !== 0) {
-							node_class = "code_js_member";
+					else if (t.type === lex_d.IDENTIFIER) {
+						if ((t.flags & lex_d.flags.MEMBER) !== 0) {
+							node_class = "code_member";
 						}
 						else if (text == "undefined") {
-							node_class = "code_js_literal";
+							node_class = "code_literal";
 						}
 						else {
-							node_class = "code_js_identifier";
+							node_class = "code_identifier";
 						}
 					}
-					else if (t.type === lexjs.NUMBER) {
-						node_class = "code_js_number";
+					else if (t.type === lex_d.NUMBER) {
+						node_class = "code_number";
 					}
-					else if (t.type === lexjs.STRING) {
+					else if (t.type === lex_d.STRING) {
 						split = true;
 						formatter = format_string;
-						node_class = (text[0] === "'") ? "code_js_string_single" : "code_js_string_double";
+						node_class = (text[text.length - 1] === "'") ? "code_string_single" : "code_string_double";
 					}
-					else if (t.type === lexjs.REGEX) {
+					else if (t.type === lex_d.REGEX) {
 						formatter = format_regex;
-						node_class = "code_js_regex";
+						node_class = "code_regex";
 					}
-					else if (t.type === lexjs.OPERATOR) {
-						if ((t.flags & lexjs.FLAG_BRACKET) !== 0) {
-							node_class = "code_js_bracket";
+					else if (t.type === lex_d.OPERATOR) {
+						if ((t.flags & lex_d.flags.BRACKET) !== 0) {
+							node_class = "code_bracket";
 						}
 						else if ([ ":", ";", ",", ".", "?" ].indexOf(text) >= 0) {
-							node_class = "code_js_punct";
+							node_class = "code_punct";
 						}
 						else {
-							node_class = "code_js_operator";
+							node_class = "code_operator";
 						}
 					}
-					else if (t.type === lexjs.WHITESPACE) {
+					else if (t.type === lex_d.WHITESPACE) {
 						split = true;
 						formatter = format_whitespace_or_comment;
-						node_class = "code_js_whitespace";
+						node_class = "code_whitespace";
 					}
-					else if (t.type === lexjs.COMMENT) {
+					else if (t.type === lex_d.COMMENT) {
 						split = true;
 						formatter = format_whitespace_or_comment;
 						if (text.substr(0, 2) === "/*") {
-							node_class = "code_js_comment_multi";
-							if (text.substr(0, 3) === "/**") node_class += " code_js_comment_formal";
+							node_class = "code_comment_multi";
+							if (text.substr(0, 3) === "/**") node_class += " code_comment_formal";
 						}
 						else {
-							node_class = "code_js_comment";
-							if (text.substr(0, 3) === "///") node_class += " code_js_comment_formal";
+							node_class = "code_comment";
+							if (text.substr(0, 3) === "///") node_class += " code_comment_formal";
 						}
 					}
-					else { // if (t.type === lexjs.INVALID) {
+					else { // if (t.type === lex_d.INVALID) {
 						split = true;
-						node_class = "code_js_invalid";
+						node_class = "code_invalid";
 					}
 
-					text = split ? lexjs.Lexer.string_splitlines(text) : [ text ];
+					text = split ? lex_d.string_splitlines(text) : [ text ];
 					for (i = 0; i < text.length; ++i) {
 						if (i > 0) {
 							source += complete_line(line, line_pos);
@@ -370,6 +398,126 @@
 							line += formatter.call(this, node_class, text[i], line_pos);
 							line_pos += text[i].length;
 						}
+					}
+				}
+
+				source += complete_line(line, line_pos);
+				return source;
+			},
+			lexpy: function (lex, lex_d, input) {
+				var lexer = new lex.Lexer(lex_d, input),
+					source = '',
+					line = '',
+					line_pos = 0,
+					next_token = lexer.get_token(),
+					last_unignored_token = null,
+					last_ignored_token = null,
+					last_ignored_token_count = 0,
+					i, t, split, formatter, node_class, text, cls_target;
+
+				while ((t = next_token) !== null) {
+					next_token = lexer.get_token();
+
+					text = t.text;
+					split = false;
+					formatter = format_default;
+					node_class = "";
+
+					if (t.type === lex_d.KEYWORD) {
+						node_class = "code_keyword";
+					}
+					else if (t.type === lex_d.IDENTIFIER) {
+						node_class = "code_identifier";
+
+						if (/^([ur]|ur)$/.test(text) && next_token !== null && next_token.type === lex_d.STRING) {
+							node_class = "code_string_flags";
+						}
+						else if ([ "True" , "False" , "None" ].indexOf(text) >= 0) {
+							node_class = "code_literal";
+						}
+						else if (text === "self") {
+							node_class = "code_this";
+						}
+						else if ((t.flags & lex_d.flags.MEMBER) !== 0) {
+							node_class = "code_member";
+						}
+						else if (last_unignored_token.type === lex_d.KEYWORD) {
+							cls_target = null;
+
+							if (last_unignored_token.text === "def") cls_target = "code_function_name";
+							else if (last_unignored_token.text === "class") cls_target = "code_class_name";
+
+							if (
+								cls_target !== null &&
+								last_ignored_token_count === 1 &&
+								last_ignored_token.type === lex_d.WHITESPACE &&
+								!lex_d.string_contains_newline(last_ignored_token.text)
+							) {
+								node_class = cls_target;
+							}
+						}
+					}
+					else if (t.type === lex_d.NUMBER) {
+						node_class = "code_number";
+					}
+					else if (t.type === lex_d.STRING) {
+						split = true;
+						formatter = format_string;
+						node_class = (text[text.length - 1] === "'") ? "code_string_single" : "code_string_double";
+						if ((t.flags & lex_d.flags.STRING_TRIPLE) !== 0) {
+							node_class += " code_string_triple";
+						}
+					}
+					else if (t.type === lex_d.OPERATOR) {
+						if ((t.flags & lex_d.flags.BRACKET) !== 0) {
+							node_class = "code_bracket";
+						}
+						else if ([ ":", ";", ",", ".", "\\" ].indexOf(text) >= 0) {
+							node_class = "code_punct";
+						}
+						else {
+							node_class = "code_operator";
+						}
+					}
+					else if (t.type === lex_d.WHITESPACE) {
+						split = true;
+						formatter = format_whitespace_or_comment;
+						node_class = "code_whitespace";
+					}
+					else if (t.type === lex_d.COMMENT) {
+						split = true;
+						formatter = format_whitespace_or_comment;
+						node_class = "code_comment";
+					}
+					else { // if (t.type === lex_d.INVALID) {
+						split = true;
+						node_class = "code_invalid";
+					}
+
+					// Format
+					text = split ? lex_d.string_splitlines(text) : [ text ];
+					for (i = 0; i < text.length; ++i) {
+						if (i > 0) {
+							source += complete_line(line, line_pos);
+							line = '';
+							line_pos = 0;
+						}
+
+						if (text[i].length > 0) {
+							line += formatter.call(this, node_class, text[i], line_pos);
+							line_pos += text[i].length;
+						}
+					}
+
+					// Next
+					if ((t.flags & lex_d.flags.IGNORE) === lex_d.flags.IGNORE) {
+						last_ignored_token = t;
+						++last_ignored_token_count;
+					}
+					else {
+						last_unignored_token = t;
+						last_ignored_token = null;
+						last_ignored_token_count = 0;
 					}
 				}
 
@@ -391,7 +539,7 @@
 
 		this.classList.add("demo_option_selected");
 
-		load_demo(this.getAttribute("data-target") || "");
+		load_demo(this.getAttribute("data-target") || "", this.getAttribute("data-library") || "");
 	};
 
 
@@ -407,7 +555,7 @@
 		for (i = 0; i < n.length; ++i) {
 			n[i].addEventListener("click", on_demo_option_click, false);
 			if (n[i].classList.contains("demo_option_selected")) {
-				load_demo(n[i].getAttribute("data-target") || "");
+				load_demo(n[i].getAttribute("data-target") || "", n[i].getAttribute("data-library") || "");
 			}
 		}
 	});

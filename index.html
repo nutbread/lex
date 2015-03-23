@@ -2,8 +2,8 @@
 <html>
 <head>
 	<meta charset="UTF-8" />
-	<meta name="description" content="Lexical analysis libraries for JavaScript" />
-	<meta name="keywords" content="python,lex,lexer,lexical,lexical analyzer,lexical analysis,libraries,javascript,js,python" />
+	<meta name="description" content="Lexical analysis libraries for JavaScript and Python" />
+	<meta name="keywords" content="python,lex,lexer,lexical,lexical analyzer,lexical analysis,libraries,javascript,js,python,py" />
 	<meta name="author" content="nutbread" />
 	<title>Lexical Analysis Libraries</title>
 	<link rel="shortcut icon" href="favicon.png" />
@@ -29,7 +29,7 @@
 				<td class="header_table_cell header_table_cell_full">
 					<div class="header_table_description">
 						<div class="header_table_description_name">Lexical Analysis Libraries</div>
-						<div class="header_table_description_body">Simple lexical analysis libraries for JavaScript</div>
+						<div class="header_table_description_body">Simple lexical analysis libraries for JavaScript and Python</div>
 					</div>
 				</td>
 				<td class="header_table_cell">
@@ -47,26 +47,61 @@
 
 	<h1 id="about"><span class="hardlink_text">About<a class="hardlink" href="#about"></a></span></h1>
 	<p>
-		This is a set of lexical analizers for language tokenizing. Currently there are libraries for processing JavaScript with source code in JavaScript and Python 2/3.
+		This is a set of lexical analizers for language tokenizing. Currently there are libraries for processing JavaScript and Python, with source code in JavaScript and Python 2/3.
 	</p>
 	<p>
-		It was primary written to address some edge case parsing issues found in several major applications (Notepad++, Firefox, Sublime Text, Github/Ace.) These cases usually involve regular expressions or sign-prefixed numbers.
+		It was primary written to address some edge case JavaScript parsing issues found in several major applications (Notepad++, Firefox, Sublime Text, Github/Ace.) These cases usually involve regular expressions or sign-prefixed numbers.
 	</p>
 
 	<h4 id="downloads"><span class="hardlink_text">Downloads<a class="hardlink" href="#downloads"></a></span></h4>
 	<p>
+		Files named <code>lex.*</code> are the base classes; files named <code>lex<em>lang</em>.*</code> are the language descriptor generation files.<br />
+		<span class="light">Example: <code>lex.js</code> and <code>lex<em>py</em>.js</code> are the files needed for Python code processing running on a JavaScript interpreter</span>
+	</p>
+	<p>
 		<ul>
-			<li><a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexjs.js" target="_blank"><span>lexjs.js</span></a> &ndash; JavaScript source, can run on both node.js and browsers</li>
-			<li><a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexjs.py" target="_blank"><span>lexjs.py</span></a> &ndash; Python source, versions 2.x or 3.x should both work</li>
+			<li>
+				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lex.js" target="_blank"><span>lex.js</span></a> &ndash; JavaScript source, can run on both node.js and browsers
+			</li>
+			<li>
+				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lex.py" target="_blank"><span>lex.py</span></a> &ndash; Python source, versions 2.x or 3.x should both work
+			</li>
+			<li class="top_margin large_margin">
+				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexjs.js" target="_blank"><span>lexjs.js</span></a> &ndash; JavaScript lexical analyzer <span class="light">(for JavaScript)</span>
+			</li>
+			<li>
+				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexjs.py" target="_blank"><span>lexjs.py</span></a> &ndash; JavaScript lexical analyzer <span class="light">(for Python)</span>
+			</li>
+			<li>
+				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexpy.js" target="_blank"><span>lexpy.js</span></a> &ndash; Python lexical analyzer <span class="light">(for JavaScript)</span>
+			</li>
+			<li>
+				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexpy.py" target="_blank"><span>lexpy.py</span></a> &ndash; Python lexical analyzer <span class="light">(for Python)</span>
+			</li>
 		</ul>
 	</p>
 
 	<h1 id="usage"><span class="hardlink_text">Usage<a class="hardlink" href="#usage"></a></span></h1>
 	<p>
-		Using these libraries is as simple as importing, creating a <code>Lexer</code>, then repeatedly calling the <code>get_token</code> method until it returns <span class="colored_underline" title="or language equivalent"><code>null</code></span>.
+		The general format for using these libraries is:
 	</p>
 	<p>
-		<code>get_token</code> will otherwise return a <code>Token</code> object with 3 fields:
+		<ol>
+			<li>Import your language's <code>lex.*</code> file</li>
+			<li>Import your language's descriptor generator <code>lex<em>lang</em>.*</code> file</li>
+			<li>Create the descriptor using <code>lexlang = lex<em>lang</em>.gen(lex);</code></li>
+			<li>
+				Create a <code>lex.Lexer</code> object with the descriptor as the first argument, and the input string as the second<br />
+				<span class="light">It is preferred that the source code is a unicode string in Python</span>
+			</li>
+			<li>
+				Repeatedly call the lexer's <code>get_token</code> method until it returns <code>null</code> (or language equivalent.)
+			</li>
+		</ol>
+	</p>
+
+	<p class="top_margin large_margin">
+		When not returning a <code>null</code> value, <code>get_token</code> will otherwise return a <code>Token</code> object with 3 fields:
 	</p>
 	<p>
 		<ul>
@@ -78,7 +113,8 @@
 			</li>
 		</ul>
 	</p>
-	<p>
+
+	<p class="top_margin large_margin">
 		<h6 class="colored">JavaScript token type constants:</h6>
 		<code>INVALID</code>,
 		<code>KEYWORD</code>,
@@ -91,26 +127,51 @@
 		<code>WHITESPACE</code>,
 		<code>COMMENT</code>
 	</p>
+
 	<p>
-		<h6><span class="colored">JavaScript token flags</span> (that can be useful outside the <code>Lexer</code>):</h6>
-		<code>FLAG_MEMBER</code>, <code class="light">// indicates the word is a member (identifier_word.<strong>member_word</strong>)</code><br />
-		<code>FLAG_VERSION_FUTURE</code>, <code class="light">// this keyword is a future reserved keyword</code><br />
+		<h6 class="colored">Python token type constants:</h6>
+		<code>INVALID</code>,
+		<code>KEYWORD</code>,
+		<code>LITERAL</code>,
+		<code>IDENTIFIER</code>,
+		<code>NUMBER</code>,
+		<code>STRING</code>,
+		<code>OPERATOR</code>,
+		<code>WHITESPACE</code>,
+		<code>COMMENT</code>
+	</p>
+
+	<p class="top_margin large_margin">
+		<h6><span class="colored">Generic token flags</span> (that can be useful outside the <code>Lexer</code>):</h6>
+		<code>flags.MEMBER</code>, <code class="light">// indicates the word is a member (identifier_word.<strong>member_word</strong>)</code><br />
+		<code>flags.BRACKET</code>, <code class="light">// this operator is a bracket of some sort</code><br />
+		<code>flags.BRACKET_CLOSE</code>, <code class="light">// this operator is a closing bracket</code><br />
 		<code>...</code> <code class="light">// Additional token flag constants can be found by opening the library's source</code>
 	</p>
-	<p>
+
+	<p class="top_margin large_margin">
 		For additional help, view some of <a class="link_codebase light_underline" href="https://github.com/nutbread/lex/tree/gh-pages/test" target="_blank"><span>these test files</span></a>, as examples are often more useful than wordy documentation.
 	</p>
 
 	<div class="top_margin js_on">
 		<h1 id="demo"><span class="hardlink_text">Demo<a class="hardlink" href="#demo"></a></span></h1>
 		<p>
-			This demo uses <code>lexjs.js</code> to lexify some source and testing files.
-		</p>
-		<p>
-			<div class="demo_options">
-				<a class="demo_option demo_option_selected" data-target="test/test1.js">test1.js</a><a class="demo_option" data-target="test/test2.js">test2.js</a><a class="demo_option" data-target="test/test3.js">test3.js</a><a class="demo_option" data-target="test/test4.js">test4.js</a><a class="demo_option" data-target="src/lexjs.js">lexjs.js</a><a class="demo_option" data-target="test/lexjs-test.js">lexjs-test.js</a><a class="demo_option" data-target="script.js">script.js</a>
+			<div class="demo_options_table">
+				<div class="demo_options_row">
+					<div class="demo_options_cell">JavaScript:</div>
+					<div class="demo_options_cell">
+						<div class="demo_options"><a class="demo_option demo_option_selected" data-target="test/test1.js" data-library="lexjs">test1.js</a><a class="demo_option" data-target="test/test2.js" data-library="lexjs">test2.js</a><a class="demo_option" data-target="test/test3.js" data-library="lexjs">test3.js</a><a class="demo_option" data-target="test/test4.js" data-library="lexjs">test4.js</a><a class="demo_option" data-target="src/lexjs.js" data-library="lexjs">lexjs.js</a><a class="demo_option" data-target="test/lex-test.js" data-library="lexjs">lex-test.js</a><a class="demo_option" data-target="script.js" data-library="lexjs">script.js</a></div>
+					</div>
+				</div>
+				<div class="demo_options_row"><div class="demo_options_cell demo_options_cell_sep"></div></div>
+				<div class="demo_options_row">
+					<div class="demo_options_cell">Python:</div>
+					<div class="demo_options_cell">
+						<div class="demo_options"><a class="demo_option" data-target="test/test1.py" data-library="lexpy">test1.py</a><a class="demo_option" data-target="test/lex-test.py" data-library="lexpy">lex-test.py</a><a class="demo_option" data-target="src/lexpy.py" data-library="lexpy">lexpy.py</a></div>
+					</div>
+				</div>
 			</div>
-			<div class="demo_code codeblock codeblock_pre code_js"><div class="codeblock_inner demo_code_inner"><div class="demo_code_placeholder"></div></div></div>
+			<div class="demo_code codeblock codeblock_pre"><div class="codeblock_inner demo_code_inner"><div class="demo_code_placeholder"></div></div></div>
 			<div class="demo_info">
 				<p>
 					A few reference images are included for <code>test1.js</code> for comparison of highlighting:<br />

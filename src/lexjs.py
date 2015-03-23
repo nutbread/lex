@@ -1,342 +1,187 @@
-#! /usr/bin/env python
+# Libaries
 import re;
 
 
 
-# Types
-INVALID = 0;
-KEYWORD = 1;
-LITERAL = 2;
-IDENTIFIER = 3;
-NUMBER = 4;
-STRING = 5;
-REGEX = 6;
-OPERATOR = 7;
-WHITESPACE = 8;
-COMMENT = 9;
+# Generator function
+def gen(lex):
+	# Language descriptor
+	descriptor = lex.Descriptor([
+		"IGNORE",
+		"MEMBER",
+		"NEXT_IS_MEMBER",
+		"NEXT_NOT_REGEX",
+		"NEXT_NOT_REGEX_CHECK",
+		"NEXT_NO_OP_PREFIX",
+		"START_REGEX",
+		"START_STRING",
+		"START_COMMENT",
+		"BRACKET",
+		"BRACKET_CLOSE",
+		"FUTURE",
+		"STRICT_REQUIRED",
+	], "IGNORE");
+	flags = descriptor.flags;
+	descriptor.define_types({
+		"INVALID": flags.NEXT_NOT_REGEX,
+		"KEYWORD": 0,
+		"IDENTIFIER": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
+		"NUMBER": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
+		"STRING": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
+		"REGEX": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
+		"OPERATOR": 0,
+		"WHITESPACE": flags.IGNORE,
+		"COMMENT": flags.IGNORE,
+	});
+	keywords = {
+		"break":      flags.NEXT_NOT_REGEX,
+		"case":       0,
+		"class":      flags.NEXT_NOT_REGEX,
+		"catch":      flags.NEXT_NOT_REGEX,
+		"const":      flags.NEXT_NOT_REGEX,
+		"continue":   flags.NEXT_NOT_REGEX,
+		"debugger":   flags.NEXT_NOT_REGEX,
+		"default":    flags.NEXT_NOT_REGEX,
+		"delete":     0,
+		"do":         0,
+		"else":       0,
+		"export":     flags.NEXT_NOT_REGEX,
+		"extends":    flags.NEXT_NOT_REGEX,
+		"finally":    flags.NEXT_NOT_REGEX,
+		"for":        flags.NEXT_NOT_REGEX,
+		"function":   flags.NEXT_NOT_REGEX,
+		"if":         flags.NEXT_NOT_REGEX,
+		"import":     flags.NEXT_NOT_REGEX,
+		"in":         0,
+		"instanceof": 0,
+		"let":        flags.NEXT_NOT_REGEX,
+		"new":        0,
+		"return":     0,
+		"super":      flags.NEXT_NOT_REGEX,
+		"switch":     flags.NEXT_NOT_REGEX,
+		"this":       flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		"throw":      0,
+		"try":        flags.NEXT_NOT_REGEX,
+		"typeof":     0,
+		"var":        flags.NEXT_NOT_REGEX,
+		"void":       0,
+		"while":      flags.NEXT_NOT_REGEX,
+		"with":       flags.NEXT_NOT_REGEX,
+		"yield":      0,
 
-token_type_names = (
-	"invalid",
-	"keyword",
-	"literal",
-	"identifier",
-	"number",
-	"string",
-	"regex",
-	"operator",
-	"whitespace",
-	"comment",
-);
+		"await": flags.NEXT_NOT_REGEX | flags.FUTURE,
+		"enum":  flags.NEXT_NOT_REGEX | flags.FUTURE,
 
-def token_type_to_string(token_type):
-	try:
-		return token_type_names[token_type];
-	except (IndexError, TypeError):
-		return "";
+		"implements": flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		"interface":  flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		"public":     flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		"private":    flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		"package":    flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		"protected":  flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		"static":     flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
 
-# Flags
-FLAG_NONE = 0x0;
-FLAG_REGEX = 0x1;
-FLAG_STRING = 0x2;
-FLAG_COMMENT = 0x4;
-FLAG_BRACKET = 0x8;
-FLAG_BRACKET_CLOSE = 0x10;
-FLAG_MEMBER = 0x20;
-FLAG_NO_REGEX_AFTER = 0x40; # indicates regex expressions can not start after this token
-FLAG_NO_REGEX_AFTER_EXT = 0x80; # indicates that there could potentially be regex after under certain circumstances; additional checking required
-FLAG_STRICT_REQUIRED = 0x100; # not used yet, but has potential to be used
-FLAG_VERSION_FUTURE = 0x200;
-FLAG_VERSION_PAST = 0x400; # these will be skipped when converting to keywords
-FLAG_IGNORE = 0x800; # internally "ignore" certain characters such as whitespace and comments
-FLAG_NO_OP_PREFIX_AFTER = 0x1000; # indicates numeric values beginning with "operator" characters (+ or -) should not be matched
-FLAG_NEXT_IS_MEMBER = 0x2000;
+		# "abstract":     flags.NEXT_NOT_REGEX | flags.PAST,
+		# "boolean":      flags.NEXT_NOT_REGEX | flags.PAST,
+		# "byte":         flags.NEXT_NOT_REGEX | flags.PAST,
+		# "char":         flags.NEXT_NOT_REGEX | flags.PAST,
+		# "double":       flags.NEXT_NOT_REGEX | flags.PAST,
+		# "final":        flags.NEXT_NOT_REGEX | flags.PAST,
+		# "float":        flags.NEXT_NOT_REGEX | flags.PAST,
+		# "goto":         flags.NEXT_NOT_REGEX | flags.PAST,
+		# "int":          flags.NEXT_NOT_REGEX | flags.PAST,
+		# "long":         flags.NEXT_NOT_REGEX | flags.PAST,
+		# "native":       flags.NEXT_NOT_REGEX | flags.PAST,
+		# "short":        flags.NEXT_NOT_REGEX | flags.PAST,
+		# "synchronized": flags.NEXT_NOT_REGEX | flags.PAST,
+		# "transient":    flags.NEXT_NOT_REGEX | flags.PAST,
+		# "volatile":     flags.NEXT_NOT_REGEX | flags.PAST,
 
-token_flag_names = (
-	"NONE",
-	"REGEX",
-	"STRING",
-	"COMMENT",
-	"BRACKET",
-	"BRACKET_CLOSE",
-	"MEMBER",
-	"NO_REGEX_AFTER",
-	"NO_REGEX_AFTER_EXT",
-	"STRICT_REQUIRED",
-	"VERSION_FUTURE",
-	"VERSION_PAST",
-	"IGNORE",
-	"NO_OP_PREFIX_AFTER",
-);
+		"null":  flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		"true":  flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		"false": flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+	};
+	operators = lex.tree({
+		">>>": 0,
+		">>=": 0,
+		">>": 0,
+		">=": 0,
+		">": 0,
 
-def token_flags_to_string(flags):
-	if (flags == 0):
-		return token_flag_names[0];
+		"<<=": 0,
+		"<<": 0,
+		"<=": 0,
+		"<": 0,
 
-	s = [];
-	f = 0x1;
-	for i in range(1, len(token_flag_names)):
-		if ((flags & f) != 0):
-			s.append(token_flag_names[i]);
-		f <<= 1;
+		"===": 0,
+		"==": 0,
+		"=": 0,
 
-	return " | ".join(s);
+		"!==": 0,
+		"!=": 0,
+		"!": 0,
 
+		"&&": 0,
+		"&=": 0,
+		"&": 0,
 
+		"||": 0,
+		"|=": 0,
+		"|": 0,
 
-# Token class
-class Token(object):
-	def __init__(self, text, type, flags):
-		self.text = text;
-		self.type = type;
-		self.flags = flags;
+		"++": 0 | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		"+=": 0,
+		"+": 0,
 
-	def __str__(self):
-		return "{0:s}(text={1:s}, type={2:s}, flags={3:s})".format(self.__class__.__name__, repr(self.text), token_type_to_string(self.type), token_flags_to_string(self.flags));
+		"--": 0 | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		"-=": 0,
+		"-": 0,
 
-	def __unicode__(self):
-		return u"{0:s}(text={1:s}, type={2:s}, flags={3:s})".format(self.__class__.__name__, repr(self.text), token_type_to_string(self.type), token_flags_to_string(self.flags));
+		"*=": 0,
+		"*": 0,
 
+		"/=": flags.START_REGEX,
+		"/": flags.START_REGEX,
 
+		"%=": 0,
+		"%": 0,
 
-# Tokenizer class
-class Lexer(object):
-	# Bracket tracking class
-	class __Bracket(object):
-		def __init__(self, before, tid, id, opener):
-			self.before = before;
-			self.token_id = tid;
-			self.id = id;
-			self.opener = opener;
-			self.other = None;
+		"^=": 0,
+		"^": 0,
 
-	# Format operators to be easier/faster to use tree
-	def __format_operators(operators):
-		ops_new = {};
+		"~": 0,
+		"?": 0,
+		":": 0,
+		";": 0,
+		",": 0,
+		".": flags.NEXT_IS_MEMBER | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
 
-		for k in operators:
-			o = ops_new;
-			for i in range(0, len(k) - 1):
-				c = k[i];
-				if (c in o):
-					if (o[c][1] is None):
-						o[c][1] = {};
-				else:
-					o[c] = [ None , {} ];
-				o = o[c][1];
+		"(": flags.BRACKET,
+		"[": flags.BRACKET,
+		"{": flags.BRACKET,
+		")": flags.BRACKET | flags.BRACKET_CLOSE | flags.NEXT_NOT_REGEX | flags.NEXT_NOT_REGEX_CHECK | flags.NEXT_NO_OP_PREFIX,
+		"]": flags.BRACKET | flags.BRACKET_CLOSE | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		"}": flags.BRACKET | flags.BRACKET_CLOSE,
 
-			c = k[-1];
-			if (c in o):
-				o[c][0] = operators[k];
-			else:
-				o[c] = [ operators[k] , None ];
-
-		return ops_new;
-
-	__operators = __format_operators({
-		">>>": FLAG_NONE,
-		">>=": FLAG_NONE,
-		">>": FLAG_NONE,
-		">=": FLAG_NONE,
-		">": FLAG_NONE,
-
-		"<<=": FLAG_NONE,
-		"<<": FLAG_NONE,
-		"<=": FLAG_NONE,
-		"<": FLAG_NONE,
-
-		"===": FLAG_NONE,
-		"==": FLAG_NONE,
-		"=": FLAG_NONE,
-
-		"!==": FLAG_NONE,
-		"!=": FLAG_NONE,
-		"!": FLAG_NONE,
-
-		"&&": FLAG_NONE,
-		"&=": FLAG_NONE,
-		"&": FLAG_NONE,
-
-		"||": FLAG_NONE,
-		"|=": FLAG_NONE,
-		"|": FLAG_NONE,
-
-		"++": FLAG_NONE | FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER,
-		"+=": FLAG_NONE,
-		"+": FLAG_NONE,
-
-		"--": FLAG_NONE | FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER,
-		"-=": FLAG_NONE,
-		"-": FLAG_NONE,
-
-		"*=": FLAG_NONE,
-		"*": FLAG_NONE,
-
-		"/=": FLAG_REGEX,
-		"/": FLAG_REGEX,
-
-		"%=": FLAG_NONE,
-		"%": FLAG_NONE,
-
-		"^=": FLAG_NONE,
-		"^": FLAG_NONE,
-
-		"~": FLAG_NONE,
-		"?": FLAG_NONE,
-		":": FLAG_NONE,
-		";": FLAG_NONE,
-		",": FLAG_NONE,
-		".": FLAG_NEXT_IS_MEMBER | FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER,
-
-		"(": FLAG_BRACKET,
-		"[": FLAG_BRACKET,
-		"{": FLAG_BRACKET,
-		")": FLAG_BRACKET | FLAG_BRACKET_CLOSE | FLAG_NO_REGEX_AFTER | FLAG_NO_REGEX_AFTER_EXT | FLAG_NO_OP_PREFIX_AFTER,
-		"]": FLAG_BRACKET | FLAG_BRACKET_CLOSE | FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER,
-		"}": FLAG_BRACKET | FLAG_BRACKET_CLOSE,
-
-		"//": FLAG_COMMENT,
-		"/*": FLAG_COMMENT,
-		"\"": FLAG_STRING,
-		"\'": FLAG_STRING,
+		"//": flags.START_COMMENT,
+		"/*": flags.START_COMMENT,
+		"\"": flags.START_STRING,
+		"\'": flags.START_STRING,
 	});
 
-	__keywords = {
-		# keyword: ( type , flags )
-		"break":      ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"case":       ( KEYWORD , FLAG_NONE ),
-		"class":      ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"catch":      ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"const":      ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"continue":   ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"debugger":   ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"default":    ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"delete":     ( KEYWORD , FLAG_NONE ),
-		"do":         ( KEYWORD , FLAG_NONE ),
-		"else":       ( KEYWORD , FLAG_NONE ),
-		"export":     ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"extends":    ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"finally":    ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"for":        ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"function":   ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"if":         ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"import":     ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"in":         ( KEYWORD , FLAG_NONE ),
-		"instanceof": ( KEYWORD , FLAG_NONE ),
-		"let":        ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"new":        ( KEYWORD , FLAG_NONE ),
-		"return":     ( KEYWORD , FLAG_NONE ),
-		"super":      ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"switch":     ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"this":       ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER ),
-		"throw":      ( KEYWORD , FLAG_NONE ),
-		"try":        ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"typeof":     ( KEYWORD , FLAG_NONE ),
-		"var":        ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"void":       ( KEYWORD , FLAG_NONE ),
-		"while":      ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"with":       ( KEYWORD , FLAG_NO_REGEX_AFTER ),
-		"yield":      ( KEYWORD , FLAG_NONE ),
+	# Matching logic
+	re_comment = re.compile(u"[^\\r\\n\u2028\u2029]*");
+	re_comment_multi = re.compile(u".*?(?:\\*/|$)", re.DOTALL);
+	re_regex_flags = re.compile(u"[a-z]*");
+	re_newlines_search = re.compile(u"[\\r\\n\u2028\u2029]");
+	re_newlines_split = re.compile(u"[\\n\u2028\u2029]|\\r\\n?");
 
-		"await": ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_FUTURE ),
-		"enum":  ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_FUTURE ),
-
-		"implements": ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_FUTURE | FLAG_STRICT_REQUIRED ),
-		"interface":  ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_FUTURE | FLAG_STRICT_REQUIRED ),
-		"public":     ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_FUTURE | FLAG_STRICT_REQUIRED ),
-		"private":    ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_FUTURE | FLAG_STRICT_REQUIRED ),
-		"package":    ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_FUTURE | FLAG_STRICT_REQUIRED ),
-		"protected":  ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_FUTURE | FLAG_STRICT_REQUIRED ),
-		"static":     ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_FUTURE | FLAG_STRICT_REQUIRED ),
-
-		"abstract":     ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"boolean":      ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"byte":         ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"char":         ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"double":       ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"final":        ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"float":        ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"goto":         ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"int":          ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"long":         ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"native":       ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"short":        ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"synchronized": ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"transient":    ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-		"volatile":     ( KEYWORD , FLAG_NO_REGEX_AFTER | FLAG_VERSION_PAST ),
-
-		"null":  ( LITERAL , FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER ),
-		"true":  ( LITERAL , FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER ),
-		"false": ( LITERAL , FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER ),
-	};
-
-	__flags_default = [
-		FLAG_NO_REGEX_AFTER, # INVALID
-		FLAG_NONE, # KEYWORD
-		FLAG_NONE, # LITERAL
-		FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER, # IDENTIFIER
-		FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER, # NUMBER
-		FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER, # STRING
-		FLAG_NO_REGEX_AFTER | FLAG_NO_OP_PREFIX_AFTER, # REGEX
-		FLAG_NONE, # OPERATOR
-		FLAG_IGNORE, # WHITESPACE
-		FLAG_IGNORE, # COMMENT
-	];
-
-	__re_whitespace = re.compile(r"\s+", re.U);
-	__re_word = re.compile(r"[\w\$]+", re.U);
-	__re_number = re.compile(r"([+-])?(?:(0[xX](?:[0-9a-fA-F]+))|([0-9]+(?:\.[0-9]*)?(?:[eE][+-]?[0-9]+)?)|(\.[0-9]+(?:[eE][+-]?[0-9]+)?))", re.U);
-	__re_invalid = re.compile(r"[^\s\w\${0:s}]+".format(re.escape("".join(__operators.keys()))), re.U);
-
-	__re_newlines = re.compile(u"[\\r\\n\u2028\u2029]", re.U);
-	__re_newlines_split = re.compile(u"[\\n\u2028\u2029]|\\r\\n?", re.U);
-	__re_regex_flags = re.compile(r"[a-z]*", re.U);
-
-	__re_comment = re.compile(u"[^\\r\\n\u2028\u2029]*", re.U);
-	__re_comment_multi = re.compile(r".*?(?:\*/|$)", re.U | re.DOTALL);
-
-
-
-	def __init__(self, text):
-		self.pos = 0;
-		self.text = text;
-		self.brackets = [];
-		self.bracket_stack = [];
-		self.last = Token("", WHITESPACE, FLAG_NONE);
-		self.token_id = 0;
-
-	def __match_operator(self, p, p_max):
-		value = None;
-		ops = self.__operators;
-
-		while (True):
-			c = self.text[p];
-			if (c not in ops): break;
-			p += 1;
-
-			flags = ops[c][0];
-			if (flags is not None):
-				value = [ flags , p ];
-
-			ops = ops[c][1];
-			if (ops is None or p >= p_max): break;
-
-		# Should return [ flags , end ], or None
-		return value;
-
-	def __create_token(self, token_type, flags, end):
-		token = Token(self.text[self.pos : end], token_type, self.__flags_default[token_type] | flags);
-
-		self.pos = end;
-
-		if ((token.flags & FLAG_IGNORE) == 0):
-			self.last = token;
-			self.token_id += 1;
-
-		return token;
-
-	def __create_token_string(self, flags, quote, p, p_max):
+	def match_string(self, t_info):
 		# Match to end of string
 		escaped = False;
+		p = t_info[2];
+		p_max = len(self.text);
+		quote = self.text[self.pos]
+
 		while (p < p_max):
 			c = self.text[p];
 			if (escaped):
@@ -344,44 +189,48 @@ class Lexer(object):
 				if (c == "\r" and p + 1 < p_max and self.text[p + 1] == "\n"):
 					p += 1;
 			else:
-				if (c == "\\"):
-					escaped = True;
-				elif (c == quote):
+				if (c == quote):
 					p += 1;
 					break;
-				elif (self.__re_newlines.match(c) is not None):
+				elif (c == "\\"):
+					escaped = True;
+				elif (string_contains_newline(c)):
 					break;
 
 			p += 1;
 
-		# Create the token
-		return self.__create_token(STRING, flags, p);
+		t_info[0] = self.descriptor.STRING;
+		t_info[2] = p;
 
-	def __create_token_comment(self, flags, opener, p):
+	def match_comment(self, t_info):
 		# Check which type
-		if (opener == "//"):
-			r = self.__re_comment;
-		else:
-			r = self.__re_comment_multi;
+		p = t_info[2];
+		re_pattern = re_comment;
+		if (self.text[self.pos : p] != "//"):
+			re_pattern = re_comment_multi;
 
 		# Match the comment
-		m = r.match(self.text, p);
+		m = re_pattern.match(self.text, p);
 
 		# Create the token
-		return self.__create_token(COMMENT, flags, m.end());
+		t_info[0] = self.descriptor.COMMENT;
+		t_info[2] = m.end();
 
-	def __create_token_regex(self, flags, p, p_max):
+	def match_regex(self, t_info):
 		# Check if regex is allowed
-		if ((self.last.flags & FLAG_NO_REGEX_AFTER) != 0 and ((self.last.flags & FLAG_NO_REGEX_AFTER_EXT) == 0 or not self.__check_if_regex_valid())):
-			return None;
+		if ((self.previous.flags & self.descriptor.flags.NEXT_NOT_REGEX) != 0 and ((self.previous.flags & self.descriptor.flags.NEXT_NOT_REGEX_CHECK) == 0 or not check_if_regex_valid(self))):
+			return;
 
 		# Match the regex
 		escaped = False;
 		bracketed = False;
+		p = t_info[2];
+		p_max = len(self.text);
+
 		while (p < p_max):
 			c = self.text[p];
 			if (escaped):
-				if (self.__re_newlines.match(c)):
+				if (string_contains_newline(c)):
 					break;
 				escaped = False;
 			else:
@@ -390,133 +239,112 @@ class Lexer(object):
 				elif (c == "/"):
 					if (not bracketed):
 						# Match flags and end
-						p = self.__re_regex_flags.match(self.text, p + 1).end();
+						m = re_regex_flags.match(self.text, p + 1);
+						p = m.end();
 						break;
 				elif (c == "["):
 					bracketed = True;
 				elif (c == "]"):
 					bracketed = False;
-				elif (self.__re_newlines.match(c)):
+				elif (string_contains_newline(c)):
 					break;
 
 			p += 1;
 
 		# Create the token
-		return self.__create_token(REGEX, flags, p);
+		t_info[0] = self.descriptor.REGEX;
+		t_info[2] = p;
 
-	def __create_token_word(self, end):
-		flags = FLAG_NONE;
-		token_type = IDENTIFIER;
-
-		if ((self.last.flags & FLAG_NEXT_IS_MEMBER) != 0):
-			# Member
-			flags |= FLAG_MEMBER;
-		else:
-			# Check if keyword
-			word = self.text[self.pos : end];
-			if (word in self.__keywords):
-				kw = self.__keywords[word];
-
-				# Not a past feature
-				if ((kw[1] & FLAG_VERSION_PAST) == 0):
-					token_type = kw[0];
-					flags |= kw[1];
-
-
-		return self.__create_token(token_type, flags, end);
-
-	def __check_if_regex_valid(self):
+	def check_if_regex_valid(self):
 		# Check for an if, for, or while statement
-		# Additionally, if it's a while, make sure it's not a do-while
 		if (len(self.brackets) > 0):
 			b = self.brackets[-1];
+
 			if (b.token_id == self.token_id - 1 and not b.opener):
-				b = b.other;
-				t = b.before;
-				if (t.type == KEYWORD):
-					text = t.text;
-					if (text in ( "if" , "for" , "while" )):
-						# Probably valid
-						return True;
+				t = b.other.before;
+				if (t.type == self.descriptor.KEYWORD and t.text in [ "if" , "for" , "while" ]):
+					# Probably valid
+					return True;
 
 		# Invalid
 		return False;
 
-	def get_token(self):
-		p = self.pos;
-		p_max = len(self.text);
-		if (p >= p_max):
-			return None;
+	# Token creation functions
+	def create_token_number(self, flags, p):
+		if ((self.previous.flags & self.descriptor.flags.NEXT_NO_OP_PREFIX) == 0 or self.match_tree(operators, self.pos, self.pos + 1) is None):
+			return self.create_token(descriptor.NUMBER, flags, p);
 
-		flags = FLAG_NONE;
+		return None;
 
-		# Whitespace
-		m = self.__re_whitespace.match(self.text, p);
-		if (m is not None):
-			return self.__create_token(WHITESPACE, flags, m.end());
+	def create_token_word(self, flags, p):
+		token_type = self.descriptor.IDENTIFIER;
 
-		# Number
-		m = self.__re_number.match(self.text, p);
-		if (m is not None):
-			# Also check FLAG_NO_OP_PREFIX_AFTER on previous
-			if ((self.last.flags & FLAG_NO_OP_PREFIX_AFTER) == 0 or self.__match_operator(p, p + 1) is None):
-				return self.__create_token(NUMBER, flags, m.end());
+		if ((self.previous.flags & self.descriptor.flags.NEXT_IS_MEMBER) != 0):
+			# Member
+			flags |= self.descriptor.flags.MEMBER;
+		else:
+			# Check if keyword
+			word = self.text[self.pos : p];
+			if (word in keywords):
+				token_type = self.descriptor.KEYWORD;
+				flags |= keywords[word];
 
-		# Identifier, keyword, etc
-		m = self.__re_word.match(self.text, p);
-		if (m is not None):
-			return self.__create_token_word(m.end());
+		return self.create_token(token_type, flags, p);
 
-		# Operator
-		m = self.__match_operator(p, p_max);
-		if (m is not None):
-			flags = m[0];
-			end = m[1];
+	def create_token_operator(self, flags, p):
+		t_info = [ self.descriptor.OPERATOR , flags , p ];
 
-			if ((flags & FLAG_STRING) != 0):
-				# String
-				return self.__create_token_string(flags, self.text[p : end], end, p_max);
-			elif ((flags & FLAG_COMMENT) != 0):
-				# Comment
-				return self.__create_token_comment(flags, self.text[p : end], end);
-			elif ((flags & FLAG_REGEX) != 0):
-				# Regex
-				t = self.__create_token_regex(flags, end, p_max);
-				if (t is not None):
-					return t;
+		if ((flags & self.descriptor.flags.START_STRING) != 0):
+			# String
+			match_string(self, t_info);
+		elif ((flags & self.descriptor.flags.START_COMMENT) != 0):
+			# Comment
+			match_comment(self, t_info);
+		elif ((flags & self.descriptor.flags.START_REGEX) != 0):
+			# Regex
+			match_regex(self, t_info);
 
-			if ((flags & FLAG_BRACKET) != 0):
-				# Bracket matching
-				if ((flags & FLAG_BRACKET_CLOSE) == 0):
-					b = self.__Bracket(self.last, self.token_id, len(self.brackets), True);
-					self.brackets.append(b);
+		# Bracket tracking
+		if ((flags & self.descriptor.flags.BRACKET) != 0):
+			self.bracket_track((flags & self.descriptor.flags.BRACKET_CLOSE) == 0);
 
-					self.bracket_stack.append(b);
-				else:
-					if (len(self.bracket_stack) > 0):
-						b = self.__Bracket(None, self.token_id, len(self.brackets), False);
-						self.brackets.append(b);
+		return self.create_token(t_info[0], t_info[1], t_info[2]);
 
-						b.other = self.bracket_stack.pop();
-						b.other.other = b;
-					# else: # syntax error
+	# Create descriptor
+	descriptor.define_state([ # state 0 checks
+		[
+			lex.check_regex("\\s+"), # whitespace
+			lex.create_token(descriptor.WHITESPACE),
+		],
+		[
+			lex.check_regex("[+-]?(?:0[xX](?:[0-9a-fA-F]+)|[0-9]+(?:\\.[0-9]*)?(?:[eE][+-]?[0-9]+)?|\\.[0-9]+(?:[eE][+-]?[0-9]+)?)"), # number
+			create_token_number,
+		],
+		[
+			lex.check_regex("[\\w\\$]+"), # word
+			create_token_word,
+		],
+		[
+			lex.check_tree(operators), # operator
+			create_token_operator,
+		],
+		[
+			lex.check_regex("[^\\s\\w\\$" + re.escape(lex.to_regex_class(operators)) + "]+"), # invalid
+			lex.create_token(descriptor.INVALID),
+		],
+	]);
 
-			return self.__create_token(OPERATOR, flags, end);
+	# Additional functions
+	def string_contains_newline(text):
+		return re_newlines_search.search(text) is not None;
 
-		# Invalid
-		p += 1;
-		while (p < p_max):
-			m = self.__re_invalid.match(self.text, p);
-			if (m is None): break;
-			p = m.end();
-		return self.__create_token(INVALID, flags, p);
+	def string_splitlines(text):
+		return re_newlines_split.split(text);
 
-	@classmethod
-	def string_contains_newline(cls, text):
-		return cls.__re_newlines.search(text) is not None;
+	setattr(descriptor, "string_contains_newline", string_contains_newline);
+	setattr(descriptor, "string_splitlines", string_splitlines);
 
-	@classmethod
-	def string_splitlines(cls, text):
-		return cls.__re_newlines_split.split(text);
+	# Complete
+	return descriptor;
 
 
