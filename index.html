@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="description" content="Lexical analysis libraries for JavaScript and Python" />
-	<meta name="keywords" content="python,lex,lexer,lexical,lexical analyzer,lexical analysis,libraries,javascript,js,python,py" />
+	<meta name="keywords" content="python,lex,lexer,lexical,lexical analyzer,lexical analysis,libraries,javascript,js,python,py,css" />
 	<meta name="author" content="nutbread" />
 	<title>Lexical Analysis Libraries</title>
 	<link rel="shortcut icon" href="favicon.png" />
@@ -47,7 +47,7 @@
 
 	<h1 id="about"><span class="hardlink_text">About<a class="hardlink" href="#about"></a></span></h1>
 	<p>
-		This is a set of lexical analizers for language tokenizing. Currently there are libraries for processing JavaScript and Python, with source code in JavaScript and Python 2/3.
+		This is a set of lexical analizers for language tokenizing. Currently there are libraries for processing JavaScript, Python, and CSS, with source code in JavaScript and Python 2/3.
 	</p>
 	<p>
 		It was primary written to address some edge case JavaScript parsing issues found in several major applications (Notepad++, Firefox, Sublime Text, Github/Ace.) These cases usually involve regular expressions or sign-prefixed numbers.
@@ -78,6 +78,12 @@
 			<li>
 				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexpy.py" target="_blank"><span>lexpy.py</span></a> &ndash; Python lexical analyzer <span class="light">(for Python)</span>
 			</li>
+			<li>
+				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexcss.js" target="_blank"><span>lexcss.js</span></a> &ndash; CSS lexical analyzer <span class="light">(for JavaScript)</span>
+			</li>
+			<li>
+				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexcss.py" target="_blank"><span>lexcss.py</span></a> &ndash; CSS lexical analyzer <span class="light">(for Python)</span>
+			</li>
 		</ul>
 	</p>
 
@@ -101,15 +107,22 @@
 	</p>
 
 	<p class="top_margin large_margin">
-		When not returning a <code>null</code> value, <code>get_token</code> will otherwise return a <code>Token</code> object with 3 fields:
+		When not returning a <code>null</code> value, <code>get_token</code> will otherwise return a <code>Token</code> object with 4 fields:
 	</p>
 	<p>
 		<ul>
-			<li><code>text</code> &ndash; the token string</li>
-			<li><code>type</code> &ndash; the type constant of the token</li>
+			<li>
+				<code>text</code> &ndash; the token string
+			</li>
+			<li>
+				<code>type</code> &ndash; the type constant of the token
+			</li>
 			<li>
 				<code>flags</code> &ndash; flags for the token<br />
-				<span class="light">Most flags are primarily used internally, but are occasionally useful outside the <code>Lexer</code></span>
+				<span class="light">Many flags are primarily used internally; some are useful outside the <code>Lexer</code></span>
+			</li>
+			<li>
+				<code>state</code> &ndash; the state the token was generated in<br />
 			</li>
 		</ul>
 	</p>
@@ -141,6 +154,25 @@
 		<code>COMMENT</code>
 	</p>
 
+	<p>
+		<h6 class="colored">CSS token type constants:</h6>
+		<code>INVALID</code>,
+		<code>WHITESPACE</code>,
+		<code>COMMENT</code>,
+		<code>STRING</code>,
+		<code>WORD</code>,
+		<code>OPERATOR</code>,
+		<code>AT_RULE</code>,
+		<code>SEL_TAG</code>,
+		<code>SEL_CLASS</code>,
+		<code>SEL_ID</code>,
+		<code>SEL_PSEUDO_CLASS</code>,
+		<code>SEL_PSEUDO_ELEMENT</code>,
+		<code>SEL_N_EXPRESSION</code>,
+		<code>NUMBER</code>,
+		<code>COLOR</code>
+	</p>
+
 	<p class="top_margin large_margin">
 		<h6><span class="colored">Generic token flags</span> (that can be useful outside the <code>Lexer</code>):</h6>
 		<code>flags.MEMBER</code>, <code class="light">// indicates the word is a member (identifier_word.<strong>member_word</strong>)</code><br />
@@ -160,14 +192,21 @@
 				<div class="demo_options_row">
 					<div class="demo_options_cell">JavaScript:</div>
 					<div class="demo_options_cell">
-						<div class="demo_options"><a class="demo_option demo_option_selected" data-target="test/test1.js" data-library="lexjs">test1.js</a><a class="demo_option" data-target="test/test2.js" data-library="lexjs">test2.js</a><a class="demo_option" data-target="test/test3.js" data-library="lexjs">test3.js</a><a class="demo_option" data-target="test/test4.js" data-library="lexjs">test4.js</a><a class="demo_option" data-target="src/lexjs.js" data-library="lexjs">lexjs.js</a><a class="demo_option" data-target="test/lex-test.js" data-library="lexjs">lex-test.js</a><a class="demo_option" data-target="script.js" data-library="lexjs">script.js</a></div>
+						<div class="demo_options"><a class="demo_option demo_option_selected" href="test/test1.js" target="_blank" data-target="test/test1.js" data-library="lexjs">test1.js</a><a class="demo_option" href="test/test2.js" target="_blank" data-target="test/test2.js" data-library="lexjs">test2.js</a><a class="demo_option" href="test/test3.js" target="_blank" data-target="test/test3.js" data-library="lexjs">test3.js</a><a class="demo_option" href="test/test4.js" target="_blank" data-target="test/test4.js" data-library="lexjs">test4.js</a><a class="demo_option" href="test/test5.js" target="_blank" data-target="test/test5.js" data-library="lexjs">test5.js</a><a class="demo_option" href="test/lex-test.js" target="_blank" data-target="test/lex-test.js" data-library="lexjs">lex-test.js</a><a class="demo_option" href="src/lexjs.js" target="_blank" data-target="src/lexjs.js" data-library="lexjs">lexjs.js</a><a class="demo_option" href="script.js" target="_blank" data-target="script.js" data-library="lexjs">script.js</a></div>
 					</div>
 				</div>
 				<div class="demo_options_row"><div class="demo_options_cell demo_options_cell_sep"></div></div>
 				<div class="demo_options_row">
 					<div class="demo_options_cell">Python:</div>
 					<div class="demo_options_cell">
-						<div class="demo_options"><a class="demo_option" data-target="test/test1.py" data-library="lexpy">test1.py</a><a class="demo_option" data-target="test/lex-test.py" data-library="lexpy">lex-test.py</a><a class="demo_option" data-target="src/lexpy.py" data-library="lexpy">lexpy.py</a></div>
+						<div class="demo_options"><a class="demo_option" href="test/test1.py" target="_blank" data-target="test/test1.py" data-library="lexpy">test1.py</a><a class="demo_option" href="test/lex-test.py" target="_blank" data-target="test/lex-test.py" data-library="lexpy">lex-test.py</a><a class="demo_option" href="src/lexpy.py" target="_blank" data-target="src/lexpy.py" data-library="lexpy">lexpy.py</a></div>
+					</div>
+				</div>
+				<div class="demo_options_row"><div class="demo_options_cell demo_options_cell_sep"></div></div>
+				<div class="demo_options_row">
+					<div class="demo_options_cell">CSS:</div>
+					<div class="demo_options_cell">
+						<div class="demo_options"><a class="demo_option" href="test/test1.css" target="_blank" data-target="test/test1.css" data-library="lexcss">test1.css</a><a class="demo_option" href="test/test2.css" target="_blank" data-target="test/test2.css" data-library="lexcss">test2.css</a><a class="demo_option" href="style.css" target="_blank" data-target="style.css" data-library="lexcss">style.css</a></div>
 					</div>
 				</div>
 			</div>

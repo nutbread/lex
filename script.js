@@ -524,6 +524,137 @@
 				source += complete_line(line, line_pos);
 				return source;
 			},
+			lexcss: function (lex, lex_d, input) {
+				var lexer = new lex.Lexer(lex_d, input),
+					source = '',
+					line = '',
+					line_pos = 0,
+					prev_token = lexer.previous,
+					next_token = lexer.get_token(),
+					i, t, split, formatter, node_class, text, cls_target;
+
+				while ((t = next_token) !== null) {
+					next_token = lexer.get_token();
+
+					text = t.text;
+					split = false;
+					formatter = format_default;
+					node_class = "";
+
+					if (t.type === lex_d.SEL_TAG) {
+						node_class = "code_css_tag";
+					}
+					else if (t.type === lex_d.SEL_CLASS) {
+						node_class = "code_css_class";
+					}
+					else if (t.type === lex_d.SEL_ID) {
+						node_class = "code_css_id";
+					}
+					else if (t.type === lex_d.SEL_PSEUDO_CLASS) {
+						node_class = "code_css_pseudo_class";
+					}
+					else if (t.type === lex_d.SEL_PSEUDO_ELEMENT) {
+						node_class = "code_css_pseudo_element";
+					}
+					else if (t.type === lex_d.SEL_N_EXPRESSION) {
+						node_class = "code_css_n_expression";
+					}
+					else if (t.type === lex_d.WORD) {
+						if (prev_token.type === lex_d.NUMBER && [ "em", "ex", "px", "cm", "mm", "in", "pt", "pc", "ch", "rem", "vw", "vh", "vmin", "vmax", "s", "deg" ].indexOf(text) >= 0) {
+							node_class = "code_css_number_suffix";
+						}
+						else if ((t.flags & lex_d.flags.PROPERTY) !== 0) {
+							node_class = "code_css_property";
+						}
+						else if ((t.flags & lex_d.flags.AT_RULE) !== 0) {
+							node_class = "code_css_at_word";
+						}
+						else if ((t.flags & lex_d.flags.SELECTOR_ATTRIBUTE) !== 0) {
+							node_class = "code_css_attr";
+						}
+						else if ((t.flags & lex_d.flags.SELECTOR_ATTRIBUTE_VALUE) !== 0) {
+							node_class = "code_css_attr_value";
+						}
+						else if (text === "important" && prev_token.type === lex_d.OPERATOR && prev_token.text === "!") {
+							node_class = "code_css_important";
+						}
+						else {
+							node_class = "code_css_word";
+						}
+					}
+					else if (t.type === lex_d.AT_RULE) {
+						node_class = "code_css_at_rule";
+					}
+					else if (t.type === lex_d.NUMBER) {
+						node_class = "code_css_number";
+					}
+					else if (t.type === lex_d.COLOR) {
+						node_class = "code_css_color";
+					}
+					else if (t.type === lex_d.STRING) {
+						split = true;
+						formatter = format_string;
+						if ((t.flags & lex_d.flags.AT_RULE) !== 0) {
+							node_class = "code_css_at_string";
+						}
+						else if ((t.flags & lex_d.flags.SELECTOR_ATTRIBUTE_VALUE) !== 0) {
+							node_class = "code_css_attr_value_string";
+						}
+						else {
+							node_class = "code_css_string";
+						}
+					}
+					else if (t.type === lex_d.OPERATOR) {
+						if (prev_token.type === lex_d.NUMBER && text === "%") {
+							node_class = "code_css_number_suffix";
+						}
+						else if ((t.flags & lex_d.flags.AT_RULE) !== 0) {
+							node_class = "code_css_at_operator";
+						}
+						else if ([ "{", "}", "(", ")", "[", "]", ":", ";" ].indexOf(text) >= 0) {
+							node_class = "code_css_punct";
+						}
+						else {
+							node_class = "code_css_operator";
+						}
+					}
+					else if (t.type === lex_d.WHITESPACE) {
+						split = true;
+						formatter = format_whitespace_or_comment;
+						node_class = "code_whitespace";
+					}
+					else if (t.type === lex_d.COMMENT) {
+						split = true;
+						formatter = format_whitespace_or_comment;
+						node_class = "code_comment";
+					}
+					else { // if (t.type === lex_d.INVALID) {
+						split = true;
+						node_class = "code_invalid";
+					}
+
+					// Format
+					text = split ? lex_d.string_splitlines(text) : [ text ];
+					for (i = 0; i < text.length; ++i) {
+						if (i > 0) {
+							source += complete_line(line, line_pos);
+							line = '';
+							line_pos = 0;
+						}
+
+						if (text[i].length > 0) {
+							line += formatter.call(this, node_class, text[i], line_pos);
+							line_pos += text[i].length;
+						}
+					}
+
+					// Next
+					prev_token = t;
+				}
+
+				source += complete_line(line, line_pos);
+				return source;
+			},
 		};
 
 	})();
@@ -540,6 +671,10 @@
 		this.classList.add("demo_option_selected");
 
 		load_demo(this.getAttribute("data-target") || "", this.getAttribute("data-library") || "");
+
+		event.preventDefault();
+		event.stopPropagation();
+		return false;
 	};
 
 

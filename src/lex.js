@@ -20,7 +20,11 @@ var lex = (function () {
 		this.flag_ignore = -1;
 		this.type_flags = [];
 		this.type_names = [];
-		this.states = [];
+		this.states = {};
+		this.state_names = null;
+		this.state_checks = [];
+		this.state_flags = [];
+		this.on_new = null;
 
 		var i, f;
 		for (i = 0; i < flags.length; ++i) {
@@ -42,8 +46,16 @@ var lex = (function () {
 				this[k] = i++;
 			}
 		},
-		define_state: function (state) {
-			this.states.push(state);
+		define_state_names: function (state_names) {
+			this.state_names = state_names;
+
+			for (var i = 0; i < state_names.length; ++i) {
+				this.states[state_names[i]] = i;;
+			}
+		},
+		define_state: function (state, state_flags) {
+			this.state_checks.push(state);
+			this.state_flags.push(state_flags);
 		},
 		type_to_string: function (token_type) {
 			return this.type_names[token_type] || "";
@@ -68,18 +80,22 @@ var lex = (function () {
 
 			return s;
 		},
+		state_to_string: function (state) {
+			return this.state_names[state] || "";
+		},
 	};
 
 
 
 	// Token class
-	var Token = function (text, type, flags) {
+	var Token = function (text, type, flags, state) {
 		this.text = text;
 		this.type = type;
 		this.flags = flags;
+		this.state = state;
 	};
 	Token.dummy = function () {
-		return new Token("", -1, 0);
+		return new Token("", -1, 0, -1);
 	};
 
 
@@ -104,7 +120,12 @@ var lex = (function () {
 		this.brackets = [];
 		this.bracket_stack = [];
 		this.previous = Token.dummy();
+		this.previous_actual = this.previous;
 		this.token_id = 0;
+
+		if (descriptor.on_new !== null) {
+			descriptor.on_new.call(this);
+		}
 	};
 	Lexer.prototype = {
 		constructor: Lexer,
@@ -128,7 +149,7 @@ var lex = (function () {
 			// else: // syntax error
 		},
 		create_token: function (token_type, flags, end) {
-			var token = new Token(this.text.substr(this.pos, end - this.pos), token_type, this.descriptor.type_flags[token_type] | flags);
+			var token = new Token(this.text.substr(this.pos, end - this.pos), token_type, this.descriptor.type_flags[token_type] | this.descriptor.state_flags[this.state] | flags, this.state);
 
 			this.pos = end;
 
@@ -137,10 +158,11 @@ var lex = (function () {
 				++this.token_id;
 			}
 
+			this.previous_actual = token;
 			return token;
 		},
 		repr_token: function (token) {
-			return "Token(text=" + lex.repr_string(token.text) + ", type=" + this.descriptor.type_to_string(token.type) + ", flags=" + this.descriptor.flags_to_string(token.flags) + ")";
+			return "Token(text=" + lex.repr_string(token.text) + ", type=" + this.descriptor.type_to_string(token.type) + ", flags=" + this.descriptor.flags_to_string(token.flags) + ", state=" + this.descriptor.state_to_string(token.state) + ")";
 		},
 		match_tree: function (obj, p, p_max) {
 			var value = null,
@@ -168,7 +190,7 @@ var lex = (function () {
 			// Complete?
 			if (this.pos >= this.text.length) return null;
 
-			var checks = this.descriptor.states[this.state],
+			var checks = this.descriptor.state_checks[this.state],
 				p = this.pos,
 				i = 0,
 				i_max = checks.length - 1,
@@ -243,12 +265,19 @@ var lex = (function () {
 
 		return obj_new;
 	};
-	lex.check_regex = function (pattern) {
-		var re = new RegExp("(" + pattern + ")?", "g");
+	lex.check_regex = function (pattern, flags) {
+		flags = (flags === undefined) ? "g" : flags + "g";
+
+		var re = new RegExp("(" + pattern + ")?", flags);
 		return function (p) {
 			re.lastIndex = p;
 			var m = re.exec(this.text);
 			return (m[1] === undefined) ? null : [ 0 , m.index + m[0].length ];
+		};
+	};
+	lex.check_string = function (text) {
+		return function (p) {
+			return (this.text.substr(p, text.length) !== text) ? null : [ 0 , p + text.length ];
 		};
 	};
 	lex.check_tree = function (obj) {
@@ -256,8 +285,27 @@ var lex = (function () {
 			return this.match_tree(obj, p, this.text.length);
 		};
 	};
+	var check_null_fn = function () {
+		return null;
+	};
+	lex.check_null = function () {
+		return check_null_fn;
+	};
 	lex.create_token = function (token_type) {
 		return function (flags, p) {
+			return this.create_token(token_type, flags, p);
+		};
+	};
+	lex.create_token_change_state = function (token_type, state) {
+		return function (flags, p) {
+			var t = this.create_token(token_type, flags, p);
+			this.state = state;
+			return t;
+		};
+	};
+	lex.create_token_change_state_before = function (token_type, state) {
+		return function (flags, p) {
+			this.state = state;
 			return this.create_token(token_type, flags, p);
 		};
 	};

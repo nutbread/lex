@@ -9,13 +9,21 @@ class Descriptor(object):
 		def __init__(self):
 			self.NONE = 0;
 
+	class __States(object):
+		def __init__(self):
+			pass;
+
 	def __init__(self, flags, flag_ignore):
 		self.flags = self.__Flags();
 		self.flag_names = [ "NONE" ];
 		self.flag_ignore = -1;
 		self.type_flags = [];
 		self.type_names = [];
-		self.states = [];
+		self.states = self.__States();
+		self.state_checks = [];
+		self.state_flags = [];
+		self.state_names = None;
+		self.on_new = None;
 
 		for i in range(len(flags)):
 			f = flags[i];
@@ -32,8 +40,16 @@ class Descriptor(object):
 			setattr(self, k, i);
 			i += 1;
 
-	def define_state(self, state):
-		self.states.append(state);
+	def define_state_names(self, state_names):
+		for i in range(len(state_names)):
+			setattr(self.states, state_names[i], i);
+
+		# Create names
+		self.state_names = state_names;
+
+	def define_state(self, state, state_flags):
+		self.state_checks.append(state);
+		self.state_flags.append(state_flags);
 
 	def type_to_string(self, token_type):
 		if (token_type >= 0 and token_type < len(self.type_names)):
@@ -57,18 +73,24 @@ class Descriptor(object):
 
 		return s;
 
+	def state_to_string(self, state):
+		if (state >= 0 and state < len(self.state_names)):
+			return self.state_names[state];
+		return "";
+
 
 
 # Token class
 class Token(object):
-	def __init__(self, text, type, flags):
+	def __init__(self, text, type, flags, state):
 		self.text = text;
 		self.type = type;
 		self.flags = flags;
+		self.state = state;
 
 	@classmethod
 	def dummy(cls):
-		return cls("", -1, 0);
+		return cls("", -1, 0, -1);
 
 
 
@@ -93,7 +115,11 @@ class Lexer(object):
 		self.brackets = [];
 		self.bracket_stack = [];
 		self.previous = Token.dummy();
+		self.previous_actual = self.previous;
 		self.token_id = 0;
+
+		if (descriptor.on_new is not None):
+			descriptor.on_new(self);
 
 	def bracket_track(self, opener):
 		# Bracket matching
@@ -111,7 +137,7 @@ class Lexer(object):
 		# else: # syntax error
 
 	def create_token(self, token_type, flags, end):
-		token = Token(self.text[self.pos : end], token_type, self.descriptor.type_flags[token_type] | flags);
+		token = Token(self.text[self.pos : end], token_type, self.descriptor.type_flags[token_type] | self.descriptor.state_flags[self.state] | flags, self.state);
 
 		self.pos = end;
 
@@ -119,10 +145,11 @@ class Lexer(object):
 			self.previous = token;
 			self.token_id += 1;
 
+		self.previous_actual = token;
 		return token;
 
 	def repr_token(self, token):
-		return "Token(text=" + repr(token.text) + ", type=" + self.descriptor.type_to_string(token.type) + ", flags=" + self.descriptor.flags_to_string(token.flags) + ")";
+		return "Token(text={0:s}, type={1:s}, flags={2:s}, state={3:s})".format(repr(token.text), self.descriptor.type_to_string(token.type), self.descriptor.flags_to_string(token.flags), self.descriptor.state_to_string(token.state));
 
 	def match_tree(self, obj, p, p_max):
 		value = None;
@@ -147,7 +174,7 @@ class Lexer(object):
 		# Complete?
 		if (self.pos >= len(self.text)): return None;
 
-		checks = self.descriptor.states[self.state];
+		checks = self.descriptor.state_checks[self.state];
 		p = self.pos;
 		i_max = len(checks) - 1;
 
@@ -199,20 +226,48 @@ def tree(obj):
 
 	return obj_new;
 
-def check_regex(pattern):
-	re_pattern = re.compile(pattern, re.DOTALL | re.U);
-	return (lambda self,p: __check_regex_lambda(self, p, re_pattern));
-
 def __check_regex_lambda(self, p, re_pattern):
 	m = re_pattern.match(self.text, p);
 	if (m is None): return None;
 	return [ 0 , m.end() ];
+def check_regex(pattern, flags=None):
+	f = re.DOTALL | re.U;
+	if (flags is not None):
+		f |= flags;
+	re_pattern = re.compile(pattern, f);
+	return (lambda self,p: __check_regex_lambda(self, p, re_pattern));
+
+def __check_string_lambda(self, p, text):
+	end = p + len(text);
+	if (self.text[p : end] == text):
+		return [ 0 , end ];
+	return None;
+def check_string(text):
+	return (lambda self,p: __check_string_lambda(self, p, text));
 
 def check_tree(obj):
 	return (lambda self,p: self.match_tree(obj, p, len(self.text)));
 
+def __check_null_lambda(self, p):
+	return None;
+def check_null():
+	return __check_null_lambda;
+
 def create_token(token_type):
 	return (lambda self,f,p: self.create_token(token_type, f, p));
+
+def __create_token_change_state_lambda(self, flags, p, token_type, state):
+	t = self.create_token(token_type, flags, p);
+	self.state = state;
+	return t;
+def create_token_change_state(token_type, state):
+	return (lambda self,f,p: __create_token_change_state_lambda(self, f, p, token_type, state));
+
+def __create_token_change_state_before_lambda(self, flags, p, token_type, state):
+	self.state = state;
+	return self.create_token(token_type, flags, p);
+def create_token_change_state_before(token_type, state):
+	return (lambda self,f,p: __create_token_change_state_before_lambda(self, f, p, token_type, state));
 
 def to_regex_class(obj):
 	s = [];

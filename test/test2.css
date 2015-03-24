@@ -1,0 +1,30 @@
+div.x.y.z *
+.q ..r >>>> a ::::::::hover [ type = f34f4f ] :not(div) [type=fsdfsdf] [type="string"]
+-not-an-element-_FSADFSD_D #asdf :nope ~ ext + asdf - d3d32d23
+{
+	display: x;
+	--display: x;
+}
+
+/*
+	COMMENT
+*/
+
+@media print {
+	span {
+		color: red;
+	}
+	@media print {
+		div {
+			color: red;
+		}
+	}
+}
+@what is this i dont even;
+@multi
+line
+query;
+div {
+	@nested-at-rule with (arguments) and "a;string";
+	opacity: 1;
+}

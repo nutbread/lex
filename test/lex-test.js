@@ -6,7 +6,8 @@
 	var fs = require("fs"),
 		lex = require("../src/lex"),
 		lexjs = require("../src/lexjs").gen(lex),
-		lexpy = require("../src/lexpy").gen(lex);
+		lexpy = require("../src/lexpy").gen(lex),
+		lexcss = require("../src/lexcss").gen(lex);
 
 
 
@@ -38,6 +39,23 @@
 		});
 
 		lexer = new lex.Lexer(lexpy, s);
+
+		while (true) {
+			t = lexer.get_token();
+			if (t === null) break;
+			process.stdout.write(lexer.repr_token(t) + "\n");
+		}
+
+		// Sep
+		process.stdout.write("\n\n\n");
+
+		// Python
+		s = fs.readFileSync("test2.css", {
+			encoding: "utf8",
+			flag: "r",
+		});
+
+		lexer = new lex.Lexer(lexcss, s);
 
 		while (true) {
 			t = lexer.get_token();

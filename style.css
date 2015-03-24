@@ -153,7 +153,7 @@ textarea.code_textarea {
 	text-shadow: none;
 }
 *::-moz-selection {
-	color: #ffffff ;
+	color: #ffffff;
 	background: #cd0e5a;
 	text-shadow: none;
 }
@@ -515,12 +515,12 @@ a.light_nohover_color_hover:hover {
 	color: #0080f0;
 }
 .code_whitespace {
-	color: #2776ba;
 	white-space: pre;
 }
 .code_tab {
 	display: inline-block;
 	width: 2.2em;
+	width: 4ch;
 	vertical-align: middle;
 	line-height: 0;
 	opacity: 0;
@@ -528,3 +528,63 @@ a.light_nohover_color_hover:hover {
 }
 
 
+.code_css_tag {
+	color: #0050a0;
+}
+.code_css_id {
+	color: #0080f0;
+}
+.code_css_class {
+	color: #f06000;color:#0f8050;
+}
+.code_css_pseudo_class,
+.code_css_pseudo_element {
+	color: #60ba00;
+}
+.code_css_operator {
+	color: #d549ea;
+}
+.code_css_property {
+	color: #cd0e5a;
+}
+.code_css_number {
+	color: #a337e0;
+}
+.code_css_number_suffix {
+	color: #f849b8;
+}
+.code_css_word {
+}
+.code_css_color {
+	color: #a337e0;
+}
+.code_css_string {
+	color: #0080f0;
+}
+.code_css_n_expression {
+	color: #a337e0;
+}
+.code_css_at_rule {
+	color: #f06000;
+}
+.code_css_at_word {
+	color: #f06000;
+}
+.code_css_at_string {
+	color: #f06000;
+}
+.code_css_at_operator {
+	color: #f06000;
+}
+.code_css_attr {
+	color: #0050a0;
+}
+.code_css_attr_value {
+	color: #0080f0;
+}
+.code_css_attr_value_string {
+	color: #0080f0;
+}
+.code_css_important {
+	color: #f06000;
+}

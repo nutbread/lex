@@ -311,17 +311,18 @@ def gen(lex):
 		return self.create_token(t_info[0], t_info[1], t_info[2]);
 
 	# Create descriptor
-	descriptor.define_state([ # state 0 checks
+	descriptor.define_state_names([ "DEFAULT" ]);
+	descriptor.define_state([ # state 0
 		[
-			lex.check_regex("\\s+"), # whitespace
+			lex.check_regex(u"\\s+"), # whitespace
 			lex.create_token(descriptor.WHITESPACE),
 		],
 		[
-			lex.check_regex("[+-]?(?:0[xX](?:[0-9a-fA-F]+)|[0-9]+(?:\\.[0-9]*)?(?:[eE][+-]?[0-9]+)?|\\.[0-9]+(?:[eE][+-]?[0-9]+)?)"), # number
+			lex.check_regex(u"[+-]?(?:0[xX](?:[0-9a-fA-F]+)|[0-9]+(?:\\.[0-9]*)?(?:[eE][+-]?[0-9]+)?|\\.[0-9]+(?:[eE][+-]?[0-9]+)?)"), # number
 			create_token_number,
 		],
 		[
-			lex.check_regex("[\\w\\$]+"), # word
+			lex.check_regex(u"[\\w\\$]+"), # word
 			create_token_word,
 		],
 		[
@@ -329,10 +330,10 @@ def gen(lex):
 			create_token_operator,
 		],
 		[
-			lex.check_regex("[^\\s\\w\\$" + re.escape(lex.to_regex_class(operators)) + "]+"), # invalid
+			lex.check_regex(u"[^\\s\\w\\$" + re.escape(lex.to_regex_class(operators)) + u"]+"), # invalid
 			lex.create_token(descriptor.INVALID),
 		],
-	]);
+	], 0);
 
 	# Additional functions
 	def string_contains_newline(text):

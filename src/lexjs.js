@@ -302,8 +302,9 @@ var lexjs = (function () {
 			return false;
 		};
 
-		// Create descriptor
-		descriptor.define_state([ //{ state 0 checks
+		// Checks/states
+		descriptor.define_state_names([ "DEFAULT" ]);
+		descriptor.define_state([ //{ state 0
 			[
 				lex.check_regex("\\s+"), // whitespace
 				lex.create_token(descriptor.WHITESPACE),
@@ -369,7 +370,7 @@ var lexjs = (function () {
 				lex.check_regex("[^\\s\\w\\$" + lex.regex_escape(lex.to_regex_class(operators)) + "]+"), // invalid
 				lex.create_token(descriptor.INVALID),
 			],
-		]); //}
+		], 0); //}
 
 		// Additional functions
 		descriptor.string_contains_newline = function (text) {

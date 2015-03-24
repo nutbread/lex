@@ -1,0 +1,15 @@
+@import url("test.css") print;
+some#simple.selector[rules] {
+	display: block;
+}
+another:typed::double-rule[with~="value"]:nth-of-type(3n+4)>* a+b~c,z {
+	border: 1px solid #ffffff;
+	color: rgba(0px,0,0, 0.5);
+	background: url("image") !important;
+}
+test:fake(value)::after {
+	content: "text" \feff;
+}
+/*
+	Comment
+*/
