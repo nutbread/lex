@@ -25,6 +25,7 @@ def gen(lex):
 		u"NUMBER": flags.NEXT_NO_OP_PREFIX,
 		u"STRING": flags.NEXT_NO_OP_PREFIX,
 		u"OPERATOR": 0,
+		u"DECORATOR": 0,
 		u"WHITESPACE": flags.IGNORE,
 		u"COMMENT": flags.IGNORE,
 	});
@@ -222,15 +223,19 @@ def gen(lex):
 			create_token_number,
 		],
 		[
-			lex.check_regex(u"[\\w\\$]+"), # word
+			lex.check_regex(u"[\\w]+"), # word
 			create_token_word,
+		],
+		[
+			lex.check_regex(u"@[\\w]+"), # decorator
+			lex.create_token(descriptor.DECORATOR),
 		],
 		[
 			lex.check_tree(operators), # operator
 			create_token_operator,
 		],
 		[
-			lex.check_regex(u"[^\\s\\w\\$" + re.escape(lex.to_regex_class(operators)) + u"]+"), # invalid
+			lex.check_regex(u"[^\\s\\w@" + re.escape(lex.to_regex_class(operators)) + u"]+"), # invalid
 			lex.create_token(descriptor.INVALID),
 		],
 	], 0);

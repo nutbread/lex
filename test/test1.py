@@ -5,12 +5,14 @@ import sys, lexjs;
 
 # Class
 class X(object):
+	@some.decorator
 	def __init__(self):
 		pass;
 
 
 
 # Execute
+@decorated
 def main():
 	f = open("test1.js", "rb");
 	s = f.read().decode("utf-8");

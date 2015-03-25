@@ -261,6 +261,10 @@ var highlighter = (function () {
 					formatter = format_tabbed;
 					node_class = "code_comment";
 				}
+				else if (t.type === lex_d.DECORATOR) {
+					split = true;
+					node_class = "code_decorator";
+				}
 				else { // if (t.type === lex_d.INVALID) {
 					split = true;
 					node_class = "code_invalid";

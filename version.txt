@@ -1,1 +1,14 @@
+1.2.1
+Added Python decorator syntax
+
 1.2
+Added XML/HTML processing libraries
+More consistent unicode usage in Python libraries
+Moved highlighting code to a separate file
+
+1.1
+Added CSS processing libraries
+
+1.0
+Made everything more generic
+Added Python language processing

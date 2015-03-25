@@ -36,6 +36,7 @@ var lexpy = (function () {
 			"NUMBER": flags.NEXT_NO_OP_PREFIX,
 			"STRING": flags.NEXT_NO_OP_PREFIX,
 			"OPERATOR": 0,
+			"DECORATOR": 0,
 			"WHITESPACE": flags.IGNORE,
 			"COMMENT": flags.IGNORE,
 		});
@@ -236,6 +237,10 @@ var lexpy = (function () {
 				},
 			],
 			[
+				lex.check_regex("@[\\w]+"), // decorator
+				lex.create_token(descriptor.DECORATOR),
+			],
+			[
 				lex.check_tree(operators), // operator
 				function (flags, p) {
 					var t_info = [ this.descriptor.OPERATOR , flags , p ];
@@ -257,7 +262,7 @@ var lexpy = (function () {
 				},
 			],
 			[
-				lex.check_regex("[^\\s\\w" + lex.regex_escape(lex.to_regex_class(operators)) + "]+"), // invalid
+				lex.check_regex("[^\\s\\w@" + lex.regex_escape(lex.to_regex_class(operators)) + "]+"), // invalid
 				lex.create_token(descriptor.INVALID),
 			],
 		], 0); //}

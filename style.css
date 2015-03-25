@@ -459,9 +459,7 @@ a.light_nohover_color_hover:hover {
 .code_keyword {
 	color: #a01080;
 }
-.code_this {
-	color: #f06000;
-}
+.code_this,
 .code_literal,
 .code_literal_alt {
 	color: #f06000;
@@ -524,6 +522,9 @@ a.light_nohover_color_hover:hover {
 	line-height: 0;
 	opacity: 0;
 	visibility: hidden;
+}
+.code_decorator {
+	color: #f06000;
 }
 
 
