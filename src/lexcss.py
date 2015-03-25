@@ -7,41 +7,41 @@ import re;
 def gen(lex):
 	# Language descriptor
 	descriptor = lex.Descriptor([
-		"IGNORE",
-		"AT_RULE",
-		"SELECTOR",
-		"PROPERTY",
-		"PROPERTY_VALUE",
-		"VALUE",
-		"N_EXPRESSION",
-		"SELECTOR_ATTRIBUTE",
-		"SELECTOR_ATTRIBUTE_OPERATOR",
-		"SELECTOR_ATTRIBUTE_VALUE",
-	], "IGNORE");
+		u"IGNORE",
+		u"AT_RULE",
+		u"SELECTOR",
+		u"PROPERTY",
+		u"PROPERTY_VALUE",
+		u"VALUE",
+		u"N_EXPRESSION",
+		u"SELECTOR_ATTRIBUTE",
+		u"SELECTOR_ATTRIBUTE_OPERATOR",
+		u"SELECTOR_ATTRIBUTE_VALUE",
+	], u"IGNORE");
 	flags = descriptor.flags;
 	descriptor.define_types({
-		"INVALID": 0, # generic
-		"WHITESPACE": 0,
-		"COMMENT": flags.IGNORE,
-		"STRING": 0,
-		"WORD": 0,
-		"OPERATOR": 0,
+		u"INVALID": 0, # generic
+		u"WHITESPACE": 0,
+		u"COMMENT": flags.IGNORE,
+		u"STRING": 0,
+		u"WORD": 0,
+		u"OPERATOR": 0,
 
-		"AT_RULE": 0, # at-rules
+		u"AT_RULE": 0, # at-rules
 
-		"SEL_TAG": 0, # selectors
-		"SEL_CLASS": 0,
-		"SEL_ID": 0,
-		"SEL_PSEUDO_CLASS": 0,
-		"SEL_PSEUDO_ELEMENT": 0,
-		"SEL_N_EXPRESSION": 0,
+		u"SEL_TAG": 0, # selectors
+		u"SEL_CLASS": 0,
+		u"SEL_ID": 0,
+		u"SEL_PSEUDO_CLASS": 0,
+		u"SEL_PSEUDO_ELEMENT": 0,
+		u"SEL_N_EXPRESSION": 0,
 
-		"NUMBER": 0, # values
-		"COLOR": 0,
+		u"NUMBER": 0, # values
+		u"COLOR": 0,
 	});
 
 	# Matching logic
-	re_comment = re.compile(u".*?(?:\\*/|$)", re.DOTALL);
+	re_comment = re.compile(u"\\*/|$");
 	re_newlines_search = re.compile(u"[\\r\\n\u2028\u2029]");
 	re_newlines_split = re.compile(u"[\\n\u2028\u2029]|\\r\\n?");
 
@@ -55,13 +55,13 @@ def gen(lex):
 			c = self.text[p];
 			if (escaped):
 				escaped = False;
-				if (c == "\r" and p + 1 < p_max and self.text[p + 1] == "\n"):
+				if (c == u"\r" and p + 1 < p_max and self.text[p + 1] == u"\n"):
 					p += 1;
 			else:
 				if (c == quote):
 					p += 1;
 					break;
-				elif (c == "\\"):
+				elif (c == u"\\"):
 					escaped = True;
 				elif (string_contains_newline(c)):
 					break;
@@ -72,8 +72,7 @@ def gen(lex):
 
 	def match_comment(self, p):
 		# Match the comment
-		re_pattern = re_comment;
-		m = re_pattern.match(self.text, p);
+		m = re_comment.search(self.text, p);
 		return m.end();
 
 	# Constructor
@@ -85,16 +84,16 @@ def gen(lex):
 
 	# Checks/states
 	descriptor.define_state_names([
-		"SELECTOR",
-		"GENERIC",
-		"ATTRIBUTE_EXPRESSION",
-		"ATTRIBUTE_OPERATOR",
-		"ATTRIBUTE_VALUE",
-		"N_EXPRESSION",
-		"AT_RULE",
-		"PROPERTY",
-		"PROPERTY_SEPARATOR",
-		"PROPERTY_VALUE",
+		u"SELECTOR",
+		u"GENERIC",
+		u"ATTRIBUTE_EXPRESSION",
+		u"ATTRIBUTE_OPERATOR",
+		u"ATTRIBUTE_VALUE",
+		u"N_EXPRESSION",
+		u"AT_RULE",
+		u"PROPERTY",
+		u"PROPERTY_SEPARATOR",
+		u"PROPERTY_VALUE",
 	]);
 	states = descriptor.states;
 
@@ -117,12 +116,12 @@ def gen(lex):
 
 	def create_token_selector(self, flags, p):
 		token_type = self.descriptor.SEL_TAG;
-		if (self.text[self.pos] == "."):
+		if (self.text[self.pos] == u"."):
 			token_type = self.descriptor.SEL_CLASS;
-		elif (self.text[self.pos] == "#"):
+		elif (self.text[self.pos] == u"#"):
 			token_type = self.descriptor.SEL_ID;
-		elif (self.text[self.pos] == ":"):
-			if (self.text[self.pos + 1] == ":"):
+		elif (self.text[self.pos] == u":"):
+			if (self.text[self.pos + 1] == u":"):
 				token_type = self.descriptor.SEL_PSEUDO_ELEMENT;
 			else:
 				token_type = self.descriptor.SEL_PSEUDO_CLASS;
@@ -132,16 +131,16 @@ def gen(lex):
 	def create_token_pseudo_bracket_open(self, flags, p):
 		t = None;
 		if (self.previous is self.previous_actual and self.previous.type == self.descriptor.SEL_PSEUDO_CLASS):
-			if (self.previous.text == ":not"):
+			if (self.previous.text == u":not"):
 				t = self.create_token(descriptor.OPERATOR, flags, p);
-				self.end_state_char = ")";
-			elif (self.previous.text in [ ":nth-child" , ":nth-last-child" , ":nth-of-type" , ":nth-last-of-type" ]):
+				self.end_state_char = u")";
+			elif (self.previous.text in [ u":nth-child" , u":nth-last-child" , u":nth-of-type" , u":nth-last-of-type" ]):
 				t = self.create_token(descriptor.OPERATOR, flags, p);
 				self.state = self.descriptor.states.N_EXPRESSION;
-			else: # if (self.previous.text == ":lang"):
+			else: # if (self.previous.text == u":lang"):
 				t = self.create_token(descriptor.OPERATOR, flags, p);
 				self.state = self.descriptor.states.GENERIC;
-				self.end_state_char = ")";
+				self.end_state_char = u")";
 
 		return t;
 
@@ -400,8 +399,8 @@ def gen(lex):
 	def string_splitlines(text):
 		return re_newlines_split.split(text);
 
-	setattr(descriptor, "string_contains_newline", string_contains_newline);
-	setattr(descriptor, "string_splitlines", string_splitlines);
+	setattr(descriptor, u"string_contains_newline", string_contains_newline);
+	setattr(descriptor, u"string_splitlines", string_splitlines);
 
 	# Complete
 	return descriptor;

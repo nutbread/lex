@@ -2,10 +2,11 @@
 import os, sys;
 sys.path.append(os.path.abspath(u"../src"));
 
-import lex, lexjs, lexpy, lexcss;
+import lex, lexjs, lexpy, lexcss, lexxml;
 lexjs = lexjs.gen(lex);
 lexpy = lexpy.gen(lex);
 lexcss = lexcss.gen(lex);
+lexxml = lexxml.gen(lex);
 
 
 
@@ -47,6 +48,37 @@ def main():
 	f.close();
 
 	lexer = lex.Lexer(lexcss, s);
+
+	while (True):
+		t = lexer.get_token();
+		if (t is None): break;
+		sys.stdout.write("{0:s}\n".format(lexer.repr_token(t)));
+
+	# Sep
+	sys.stdout.write("\n\n\n");
+
+	# XML
+	f = open(u"../test/test1.xml", "rb");
+	s = f.read().decode("utf-8");
+	f.close();
+
+	lexer = lex.Lexer(lexxml, s);
+
+	while (True):
+		t = lexer.get_token();
+		if (t is None): break;
+		sys.stdout.write("{0:s}\n".format(lexer.repr_token(t)));
+
+	# Sep
+	sys.stdout.write("\n\n\n");
+
+	# HTML
+	f = open(u"../test/test1.html", "rb");
+	s = f.read().decode("utf-8");
+	f.close();
+
+	lexer = lex.Lexer(lexxml, s);
+	lexer.html = True;
 
 	while (True):
 		t = lexer.get_token();

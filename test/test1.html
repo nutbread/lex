@@ -1,0 +1,34 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8" />
+	<title>Test</title>
+	<style>.s:after{ content: "<tag></tag>"; }</style>
+	<script>var s = "<tag></tag>";</script>
+</head>
+<body>
+
+	<! not a=thing >
+	<!-- comment -->
+	<![CDATA[ char data ]]>
+	<span>text</span>
+	<input type="text" disabled autocomplete=off />
+	</ nope></>
+	1 > 2
+	2 < 3
+	<?
+		code
+	?>
+	<%
+		also code
+	%>
+	<style></style>
+	<script></script>
+	<textarea></textarea>
+	<style>1</style>
+	<script>1</script>
+	<textarea spellcheck=false>1</textarea spellcheck=false>
+	<??>
+	<%%>
+
+</body>
+</html>

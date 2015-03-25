@@ -515,7 +515,6 @@ a.light_nohover_color_hover:hover {
 	color: #0080f0;
 }
 .code_whitespace {
-	white-space: pre;
 }
 .code_tab {
 	display: inline-block;
@@ -528,6 +527,14 @@ a.light_nohover_color_hover:hover {
 }
 
 
+.code_css_invalid {
+	color: #c99b1e;
+}
+.code_css_comment {
+	color: #909090;
+}
+.code_css_whitespace {
+}
 .code_css_tag {
 	color: #0050a0;
 }
@@ -588,3 +595,55 @@ a.light_nohover_color_hover:hover {
 .code_css_important {
 	color: #f06000;
 }
+
+
+.code_xml_comment {
+	color: #909090;
+}
+.code_xml_cdata {
+	color: #f06000;
+}
+.code_xml_raw_data {
+	font-weight: bold;
+}
+.code_xml_tag_open,
+.code_xml_tag_close {
+	color: #484848;
+}
+.code_xml_tag_name {
+	color: #0080f0;
+}
+.code_xml_attr {
+	color: #a337e0;
+}
+.code_xml_attr_whitespace {
+}
+.code_xml_attr_operator {
+	color: #d549ea;
+}
+.code_xml_attr_string,
+.code_xml_attr_value {
+	color: #0050a0;
+}
+.code_xml_text {
+}
+
+.code_xml_dtag_open,
+.code_xml_dtag_close,
+.code_xml_dtag_name {
+	color: #60ba00;
+}
+.code_xml_sdtag_open,
+.code_xml_sdtag_close,
+.code_xml_dattr,
+.code_xml_dattr_string {
+	color: #0f8050;
+}
+
+.code_xml_qtag_open,
+.code_xml_qtag_close,
+.code_xml_ptag_open,
+.code_xml_ptag_close {
+	color: #cd0e5a;
+}
+

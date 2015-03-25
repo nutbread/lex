@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="description" content="Lexical analysis libraries for JavaScript and Python" />
-	<meta name="keywords" content="python,lex,lexer,lexical,lexical analyzer,lexical analysis,libraries,javascript,js,python,py,css" />
+	<meta name="keywords" content="python,lex,lexer,lexical,lexical analyzer,lexical analysis,syntax highlighting,libraries,javascript,js,python,py,css,xml,html" />
 	<meta name="author" content="nutbread" />
 	<title>Lexical Analysis Libraries</title>
 	<link rel="shortcut icon" href="favicon.png" />
@@ -47,7 +47,7 @@
 
 	<h1 id="about"><span class="hardlink_text">About<a class="hardlink" href="#about"></a></span></h1>
 	<p>
-		This is a set of lexical analizers for language tokenizing. Currently there are libraries for processing JavaScript, Python, and CSS, with source code in JavaScript and Python 2/3.
+		This is a set of lexical analizers for language tokenizing. Currently there are libraries for processing JavaScript, Python, CSS, and XML/HTML with source code in JavaScript and Python 2/3.
 	</p>
 	<p>
 		It was primary written to address some edge case JavaScript parsing issues found in several major applications (Notepad++, Firefox, Sublime Text, Github/Ace.) These cases usually involve regular expressions or sign-prefixed numbers.
@@ -83,6 +83,12 @@
 			</li>
 			<li>
 				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexcss.py" target="_blank"><span>lexcss.py</span></a> &ndash; CSS lexical analyzer <span class="light">(for Python)</span>
+			</li>
+			<li>
+				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexxml.js" target="_blank"><span>lexxml.js</span></a> &ndash; XML/HTML lexical analyzer <span class="light">(for JavaScript)</span>
+			</li>
+			<li>
+				<a class="link_codebase_raw light_underline" href="https://raw.githubusercontent.com/nutbread/lex/gh-pages/src/lexxml.py" target="_blank"><span>lexxml.py</span></a> &ndash; XML/HTML lexical analyzer <span class="light">(for Python)</span>
 			</li>
 		</ul>
 	</p>
@@ -173,6 +179,21 @@
 		<code>COLOR</code>
 	</p>
 
+	<p>
+		<h6 class="colored">XML/HTML token type constants:</h6>
+		<code>COMMENT</code>,
+		<code>CDATA</code>,
+		<code>TEXT</code>,
+		<code>RAW_DATA</code>,
+		<code>TAG_OPEN</code>,
+		<code>TAG_CLOSE</code>,
+		<code>TAG_NAME</code>,
+		<code>ATTRIBUTE</code>,
+		<code>ATTRIBUTE_WHITESPACE</code>,
+		<code>ATTRIBUTE_OPERATOR</code>,
+		<code>ATTRIBUTE_STRING</code>
+	</p>
+
 	<p class="top_margin large_margin">
 		<h6><span class="colored">Generic token flags</span> (that can be useful outside the <code>Lexer</code>):</h6>
 		<code>flags.MEMBER</code>, <code class="light">// indicates the word is a member (identifier_word.<strong>member_word</strong>)</code><br />
@@ -192,7 +213,7 @@
 				<div class="demo_options_row">
 					<div class="demo_options_cell">JavaScript:</div>
 					<div class="demo_options_cell">
-						<div class="demo_options"><a class="demo_option demo_option_selected" href="test/test1.js" target="_blank" data-target="test/test1.js" data-library="lexjs">test1.js</a><a class="demo_option" href="test/test2.js" target="_blank" data-target="test/test2.js" data-library="lexjs">test2.js</a><a class="demo_option" href="test/test3.js" target="_blank" data-target="test/test3.js" data-library="lexjs">test3.js</a><a class="demo_option" href="test/test4.js" target="_blank" data-target="test/test4.js" data-library="lexjs">test4.js</a><a class="demo_option" href="test/test5.js" target="_blank" data-target="test/test5.js" data-library="lexjs">test5.js</a><a class="demo_option" href="test/lex-test.js" target="_blank" data-target="test/lex-test.js" data-library="lexjs">lex-test.js</a><a class="demo_option" href="src/lexjs.js" target="_blank" data-target="src/lexjs.js" data-library="lexjs">lexjs.js</a><a class="demo_option" href="script.js" target="_blank" data-target="script.js" data-library="lexjs">script.js</a></div>
+						<div class="demo_options"><a class="demo_option demo_option_selected" href="test/test1.js" target="_blank" data-target="test/test1.js" data-library="lexjs">test1.js</a><a class="demo_option" href="test/test2.js" target="_blank" data-target="test/test2.js" data-library="lexjs">test2.js</a><a class="demo_option" href="test/test3.js" target="_blank" data-target="test/test3.js" data-library="lexjs">test3.js</a><a class="demo_option" href="test/test4.js" target="_blank" data-target="test/test4.js" data-library="lexjs">test4.js</a><a class="demo_option" href="test/test5.js" target="_blank" data-target="test/test5.js" data-library="lexjs">test5.js</a><a class="demo_option" href="test/lex-test.js" target="_blank" data-target="test/lex-test.js" data-library="lexjs">lex-test.js</a><a class="demo_option" href="src/lexjs.js" target="_blank" data-target="src/lexjs.js" data-library="lexjs">lexjs.js</a><a class="demo_option" href="script.js" target="_blank" data-target="script.js" data-library="lexjs">script.js</a><a class="demo_option" href="highlighter.js" target="_blank" data-target="highlighter.js" data-library="lexjs">highlighter.js</a></div>
 					</div>
 				</div>
 				<div class="demo_options_row"><div class="demo_options_cell demo_options_cell_sep"></div></div>
@@ -207,6 +228,13 @@
 					<div class="demo_options_cell">CSS:</div>
 					<div class="demo_options_cell">
 						<div class="demo_options"><a class="demo_option" href="test/test1.css" target="_blank" data-target="test/test1.css" data-library="lexcss">test1.css</a><a class="demo_option" href="test/test2.css" target="_blank" data-target="test/test2.css" data-library="lexcss">test2.css</a><a class="demo_option" href="style.css" target="_blank" data-target="style.css" data-library="lexcss">style.css</a></div>
+					</div>
+				</div>
+				<div class="demo_options_row"><div class="demo_options_cell demo_options_cell_sep"></div></div>
+				<div class="demo_options_row">
+					<div class="demo_options_cell">HTML/XML:</div>
+					<div class="demo_options_cell">
+						<div class="demo_options"><a class="demo_option" href="test/test1.xml" target="_blank" data-target="test/test1.xml" data-library="lexxml" data-params="xml">test1.xml</a><a class="demo_option" href="test/test1.html" target="_blank" data-target="test/test1.html" data-library="lexxml" data-params="html">test1.html</a><a class="demo_option" href="" target="_blank" data-target="index.html" data-library="lexxml" data-params="html">index.html</a></div>
 					</div>
 				</div>
 			</div>

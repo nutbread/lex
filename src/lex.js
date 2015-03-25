@@ -122,6 +122,7 @@ var lex = (function () {
 		this.previous = Token.dummy();
 		this.previous_actual = this.previous;
 		this.token_id = 0;
+		this.extra_flags = 0;
 
 		if (descriptor.on_new !== null) {
 			descriptor.on_new.call(this);
@@ -149,7 +150,7 @@ var lex = (function () {
 			// else: // syntax error
 		},
 		create_token: function (token_type, flags, end) {
-			var token = new Token(this.text.substr(this.pos, end - this.pos), token_type, this.descriptor.type_flags[token_type] | this.descriptor.state_flags[this.state] | flags, this.state);
+			var token = new Token(this.text.substr(this.pos, end - this.pos), token_type, this.descriptor.type_flags[token_type] | this.descriptor.state_flags[this.state] | this.extra_flags | flags, this.state);
 
 			this.pos = end;
 

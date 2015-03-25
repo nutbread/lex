@@ -52,7 +52,7 @@ var lexcss = (function () {
 		});
 
 		// Matching logic
-		var re_comment = /[\s\S]*?(?:\*\/|$)/g,
+		var re_comment = /\*\/|$/g,
 			re_newlines_search = /[\r\n\u2028\u2029]/,
 			re_newlines_split = /[\n\u2028\u2029]|\r\n?/g;
 

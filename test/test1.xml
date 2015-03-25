@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html [
+	<!ELEMENT testelement ANY>
+	<!ENTITY testentity "testing entity">
+	<!-- comment -->
+]>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8" />
+	<title>Test</title>
+	<style>.a>.b{}</style>
+	<script>1>0;</script>
+</head>
+<body>
+
+	<!-- comment -->
+	<![CDATA[ char data ]]>
+	<!----><![CDATA[]]><!----><![CDATA[]]><!---->
+	<span>text</span>
+	<input type="text" disabled="disabled" />
+
+</body>
+</html>

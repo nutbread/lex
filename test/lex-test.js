@@ -7,7 +7,8 @@
 		lex = require("../src/lex"),
 		lexjs = require("../src/lexjs").gen(lex),
 		lexpy = require("../src/lexpy").gen(lex),
-		lexcss = require("../src/lexcss").gen(lex);
+		lexcss = require("../src/lexcss").gen(lex),
+		lexxml = require("../src/lexxml").gen(lex);
 
 
 
@@ -56,6 +57,41 @@
 		});
 
 		lexer = new lex.Lexer(lexcss, s);
+
+		while (true) {
+			t = lexer.get_token();
+			if (t === null) break;
+			process.stdout.write(lexer.repr_token(t) + "\n");
+		}
+
+		// Sep
+		process.stdout.write("\n\n\n");
+
+		// XML
+		s = fs.readFileSync("test1.xml", {
+			encoding: "utf8",
+			flag: "r",
+		});
+
+		lexer = new lex.Lexer(lexxml, s);
+
+		while (true) {
+			t = lexer.get_token();
+			if (t === null) break;
+			process.stdout.write(lexer.repr_token(t) + "\n");
+		}
+
+		// Sep
+		process.stdout.write("\n\n\n");
+
+		// HTML
+		s = fs.readFileSync("test1.html", {
+			encoding: "utf8",
+			flag: "r",
+		});
+
+		lexer = new lex.Lexer(lexxml, s);
+		lexer.html = true;
 
 		while (true) {
 			t = lexer.get_token();

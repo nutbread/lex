@@ -15,7 +15,7 @@ class Descriptor(object):
 
 	def __init__(self, flags, flag_ignore):
 		self.flags = self.__Flags();
-		self.flag_names = [ "NONE" ];
+		self.flag_names = [ u"NONE" ];
 		self.flag_ignore = -1;
 		self.type_flags = [];
 		self.type_names = [];
@@ -54,19 +54,19 @@ class Descriptor(object):
 	def type_to_string(self, token_type):
 		if (token_type >= 0 and token_type < len(self.type_names)):
 			return self.type_names[token_type];
-		return "";
+		return u"";
 
 	def flags_to_string(self, flags):
 		if (flags == 0):
 			return self.flag_names[0];
 
-		s = "";
+		s = u"";
 		f = 0x1;
 
 		for i in range(1, len(self.flag_names)):
 			if ((flags & f) != 0):
 				if (len(s) > 0):
-					s += " | ";
+					s += u" | ";
 				s += self.flag_names[i];
 
 			f <<= 1;
@@ -76,7 +76,7 @@ class Descriptor(object):
 	def state_to_string(self, state):
 		if (state >= 0 and state < len(self.state_names)):
 			return self.state_names[state];
-		return "";
+		return u"";
 
 
 
@@ -90,7 +90,7 @@ class Token(object):
 
 	@classmethod
 	def dummy(cls):
-		return cls("", -1, 0, -1);
+		return cls(u"", -1, 0, -1);
 
 
 
@@ -117,6 +117,7 @@ class Lexer(object):
 		self.previous = Token.dummy();
 		self.previous_actual = self.previous;
 		self.token_id = 0;
+		self.extra_flags = 0;
 
 		if (descriptor.on_new is not None):
 			descriptor.on_new(self);
@@ -137,7 +138,7 @@ class Lexer(object):
 		# else: # syntax error
 
 	def create_token(self, token_type, flags, end):
-		token = Token(self.text[self.pos : end], token_type, self.descriptor.type_flags[token_type] | self.descriptor.state_flags[self.state] | flags, self.state);
+		token = Token(self.text[self.pos : end], token_type, self.descriptor.type_flags[token_type] | self.descriptor.state_flags[self.state] | self.extra_flags | flags, self.state);
 
 		self.pos = end;
 
@@ -149,7 +150,7 @@ class Lexer(object):
 		return token;
 
 	def repr_token(self, token):
-		return "Token(text={0:s}, type={1:s}, flags={2:s}, state={3:s})".format(repr(token.text), self.descriptor.type_to_string(token.type), self.descriptor.flags_to_string(token.flags), self.descriptor.state_to_string(token.state));
+		return u"Token(text={0:s}, type={1:s}, flags={2:s}, state={3:s})".format(repr(token.text), self.descriptor.type_to_string(token.type), self.descriptor.flags_to_string(token.flags), self.descriptor.state_to_string(token.state));
 
 	def match_tree(self, obj, p, p_max):
 		value = None;
@@ -280,6 +281,6 @@ def to_regex_class(obj):
 	for k in o:
 		s.append(k);
 
-	return "".join(s);
+	return u"".join(s);
 
 

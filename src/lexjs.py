@@ -7,165 +7,165 @@ import re;
 def gen(lex):
 	# Language descriptor
 	descriptor = lex.Descriptor([
-		"IGNORE",
-		"MEMBER",
-		"NEXT_IS_MEMBER",
-		"NEXT_NOT_REGEX",
-		"NEXT_NOT_REGEX_CHECK",
-		"NEXT_NO_OP_PREFIX",
-		"START_REGEX",
-		"START_STRING",
-		"START_COMMENT",
-		"BRACKET",
-		"BRACKET_CLOSE",
-		"FUTURE",
-		"STRICT_REQUIRED",
-	], "IGNORE");
+		u"IGNORE",
+		u"MEMBER",
+		u"NEXT_IS_MEMBER",
+		u"NEXT_NOT_REGEX",
+		u"NEXT_NOT_REGEX_CHECK",
+		u"NEXT_NO_OP_PREFIX",
+		u"START_REGEX",
+		u"START_STRING",
+		u"START_COMMENT",
+		u"BRACKET",
+		u"BRACKET_CLOSE",
+		u"FUTURE",
+		u"STRICT_REQUIRED",
+	], u"IGNORE");
 	flags = descriptor.flags;
 	descriptor.define_types({
-		"INVALID": flags.NEXT_NOT_REGEX,
-		"KEYWORD": 0,
-		"IDENTIFIER": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
-		"NUMBER": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
-		"STRING": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
-		"REGEX": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
-		"OPERATOR": 0,
-		"WHITESPACE": flags.IGNORE,
-		"COMMENT": flags.IGNORE,
+		u"INVALID": flags.NEXT_NOT_REGEX,
+		u"KEYWORD": 0,
+		u"IDENTIFIER": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
+		u"NUMBER": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
+		u"STRING": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
+		u"REGEX": flags.NEXT_NO_OP_PREFIX | flags.NEXT_NOT_REGEX,
+		u"OPERATOR": 0,
+		u"WHITESPACE": flags.IGNORE,
+		u"COMMENT": flags.IGNORE,
 	});
 	keywords = {
-		"break":      flags.NEXT_NOT_REGEX,
-		"case":       0,
-		"class":      flags.NEXT_NOT_REGEX,
-		"catch":      flags.NEXT_NOT_REGEX,
-		"const":      flags.NEXT_NOT_REGEX,
-		"continue":   flags.NEXT_NOT_REGEX,
-		"debugger":   flags.NEXT_NOT_REGEX,
-		"default":    flags.NEXT_NOT_REGEX,
-		"delete":     0,
-		"do":         0,
-		"else":       0,
-		"export":     flags.NEXT_NOT_REGEX,
-		"extends":    flags.NEXT_NOT_REGEX,
-		"finally":    flags.NEXT_NOT_REGEX,
-		"for":        flags.NEXT_NOT_REGEX,
-		"function":   flags.NEXT_NOT_REGEX,
-		"if":         flags.NEXT_NOT_REGEX,
-		"import":     flags.NEXT_NOT_REGEX,
-		"in":         0,
-		"instanceof": 0,
-		"let":        flags.NEXT_NOT_REGEX,
-		"new":        0,
-		"return":     0,
-		"super":      flags.NEXT_NOT_REGEX,
-		"switch":     flags.NEXT_NOT_REGEX,
-		"this":       flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
-		"throw":      0,
-		"try":        flags.NEXT_NOT_REGEX,
-		"typeof":     0,
-		"var":        flags.NEXT_NOT_REGEX,
-		"void":       0,
-		"while":      flags.NEXT_NOT_REGEX,
-		"with":       flags.NEXT_NOT_REGEX,
-		"yield":      0,
+		u"break":      flags.NEXT_NOT_REGEX,
+		u"case":       0,
+		u"class":      flags.NEXT_NOT_REGEX,
+		u"catch":      flags.NEXT_NOT_REGEX,
+		u"const":      flags.NEXT_NOT_REGEX,
+		u"continue":   flags.NEXT_NOT_REGEX,
+		u"debugger":   flags.NEXT_NOT_REGEX,
+		u"default":    flags.NEXT_NOT_REGEX,
+		u"delete":     0,
+		u"do":         0,
+		u"else":       0,
+		u"export":     flags.NEXT_NOT_REGEX,
+		u"extends":    flags.NEXT_NOT_REGEX,
+		u"finally":    flags.NEXT_NOT_REGEX,
+		u"for":        flags.NEXT_NOT_REGEX,
+		u"function":   flags.NEXT_NOT_REGEX,
+		u"if":         flags.NEXT_NOT_REGEX,
+		u"import":     flags.NEXT_NOT_REGEX,
+		u"in":         0,
+		u"instanceof": 0,
+		u"let":        flags.NEXT_NOT_REGEX,
+		u"new":        0,
+		u"return":     0,
+		u"super":      flags.NEXT_NOT_REGEX,
+		u"switch":     flags.NEXT_NOT_REGEX,
+		u"this":       flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		u"throw":      0,
+		u"try":        flags.NEXT_NOT_REGEX,
+		u"typeof":     0,
+		u"var":        flags.NEXT_NOT_REGEX,
+		u"void":       0,
+		u"while":      flags.NEXT_NOT_REGEX,
+		u"with":       flags.NEXT_NOT_REGEX,
+		u"yield":      0,
 
-		"await": flags.NEXT_NOT_REGEX | flags.FUTURE,
-		"enum":  flags.NEXT_NOT_REGEX | flags.FUTURE,
+		u"await": flags.NEXT_NOT_REGEX | flags.FUTURE,
+		u"enum":  flags.NEXT_NOT_REGEX | flags.FUTURE,
 
-		"implements": flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
-		"interface":  flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
-		"public":     flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
-		"private":    flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
-		"package":    flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
-		"protected":  flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
-		"static":     flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		u"implements": flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		u"interface":  flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		u"public":     flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		u"private":    flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		u"package":    flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		u"protected":  flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
+		u"static":     flags.NEXT_NOT_REGEX | flags.FUTURE | flags.STRICT_REQUIRED,
 
-		# "abstract":     flags.NEXT_NOT_REGEX | flags.PAST,
-		# "boolean":      flags.NEXT_NOT_REGEX | flags.PAST,
-		# "byte":         flags.NEXT_NOT_REGEX | flags.PAST,
-		# "char":         flags.NEXT_NOT_REGEX | flags.PAST,
-		# "double":       flags.NEXT_NOT_REGEX | flags.PAST,
-		# "final":        flags.NEXT_NOT_REGEX | flags.PAST,
-		# "float":        flags.NEXT_NOT_REGEX | flags.PAST,
-		# "goto":         flags.NEXT_NOT_REGEX | flags.PAST,
-		# "int":          flags.NEXT_NOT_REGEX | flags.PAST,
-		# "long":         flags.NEXT_NOT_REGEX | flags.PAST,
-		# "native":       flags.NEXT_NOT_REGEX | flags.PAST,
-		# "short":        flags.NEXT_NOT_REGEX | flags.PAST,
-		# "synchronized": flags.NEXT_NOT_REGEX | flags.PAST,
-		# "transient":    flags.NEXT_NOT_REGEX | flags.PAST,
-		# "volatile":     flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"abstract":     flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"boolean":      flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"byte":         flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"char":         flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"double":       flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"final":        flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"float":        flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"goto":         flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"int":          flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"long":         flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"native":       flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"short":        flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"synchronized": flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"transient":    flags.NEXT_NOT_REGEX | flags.PAST,
+		# u"volatile":     flags.NEXT_NOT_REGEX | flags.PAST,
 
-		"null":  flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
-		"true":  flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
-		"false": flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		u"null":  flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		u"true":  flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		u"false": flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
 	};
 	operators = lex.tree({
-		">>>": 0,
-		">>=": 0,
-		">>": 0,
-		">=": 0,
-		">": 0,
+		u">>>": 0,
+		u">>=": 0,
+		u">>": 0,
+		u">=": 0,
+		u">": 0,
 
-		"<<=": 0,
-		"<<": 0,
-		"<=": 0,
-		"<": 0,
+		u"<<=": 0,
+		u"<<": 0,
+		u"<=": 0,
+		u"<": 0,
 
-		"===": 0,
-		"==": 0,
-		"=": 0,
+		u"===": 0,
+		u"==": 0,
+		u"=": 0,
 
-		"!==": 0,
-		"!=": 0,
-		"!": 0,
+		u"!==": 0,
+		u"!=": 0,
+		u"!": 0,
 
-		"&&": 0,
-		"&=": 0,
-		"&": 0,
+		u"&&": 0,
+		u"&=": 0,
+		u"&": 0,
 
-		"||": 0,
-		"|=": 0,
-		"|": 0,
+		u"||": 0,
+		u"|=": 0,
+		u"|": 0,
 
-		"++": 0 | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
-		"+=": 0,
-		"+": 0,
+		u"++": 0 | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		u"+=": 0,
+		u"+": 0,
 
-		"--": 0 | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
-		"-=": 0,
-		"-": 0,
+		u"--": 0 | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		u"-=": 0,
+		u"-": 0,
 
-		"*=": 0,
-		"*": 0,
+		u"*=": 0,
+		u"*": 0,
 
-		"/=": flags.START_REGEX,
-		"/": flags.START_REGEX,
+		u"/=": flags.START_REGEX,
+		u"/": flags.START_REGEX,
 
-		"%=": 0,
-		"%": 0,
+		u"%=": 0,
+		u"%": 0,
 
-		"^=": 0,
-		"^": 0,
+		u"^=": 0,
+		u"^": 0,
 
-		"~": 0,
-		"?": 0,
-		":": 0,
-		";": 0,
-		",": 0,
-		".": flags.NEXT_IS_MEMBER | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		u"~": 0,
+		u"?": 0,
+		u":": 0,
+		u";": 0,
+		u",": 0,
+		u".": flags.NEXT_IS_MEMBER | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
 
-		"(": flags.BRACKET,
-		"[": flags.BRACKET,
-		"{": flags.BRACKET,
-		")": flags.BRACKET | flags.BRACKET_CLOSE | flags.NEXT_NOT_REGEX | flags.NEXT_NOT_REGEX_CHECK | flags.NEXT_NO_OP_PREFIX,
-		"]": flags.BRACKET | flags.BRACKET_CLOSE | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
-		"}": flags.BRACKET | flags.BRACKET_CLOSE,
+		u"(": flags.BRACKET,
+		u"[": flags.BRACKET,
+		u"{": flags.BRACKET,
+		u")": flags.BRACKET | flags.BRACKET_CLOSE | flags.NEXT_NOT_REGEX | flags.NEXT_NOT_REGEX_CHECK | flags.NEXT_NO_OP_PREFIX,
+		u"]": flags.BRACKET | flags.BRACKET_CLOSE | flags.NEXT_NOT_REGEX | flags.NEXT_NO_OP_PREFIX,
+		u"}": flags.BRACKET | flags.BRACKET_CLOSE,
 
-		"//": flags.START_COMMENT,
-		"/*": flags.START_COMMENT,
-		"\"": flags.START_STRING,
-		"\'": flags.START_STRING,
+		u"//": flags.START_COMMENT,
+		u"/*": flags.START_COMMENT,
+		u"\"": flags.START_STRING,
+		u"\'": flags.START_STRING,
 	});
 
 	# Matching logic
@@ -186,13 +186,13 @@ def gen(lex):
 			c = self.text[p];
 			if (escaped):
 				escaped = False;
-				if (c == "\r" and p + 1 < p_max and self.text[p + 1] == "\n"):
+				if (c == u"\r" and p + 1 < p_max and self.text[p + 1] == u"\n"):
 					p += 1;
 			else:
 				if (c == quote):
 					p += 1;
 					break;
-				elif (c == "\\"):
+				elif (c == u"\\"):
 					escaped = True;
 				elif (string_contains_newline(c)):
 					break;
@@ -206,7 +206,7 @@ def gen(lex):
 		# Check which type
 		p = t_info[2];
 		re_pattern = re_comment;
-		if (self.text[self.pos : p] != "//"):
+		if (self.text[self.pos : p] != u"//"):
 			re_pattern = re_comment_multi;
 
 		# Match the comment
@@ -234,17 +234,17 @@ def gen(lex):
 					break;
 				escaped = False;
 			else:
-				if (c == "\\"):
+				if (c == u"\\"):
 					escaped = True;
-				elif (c == "/"):
+				elif (c == u"/"):
 					if (not bracketed):
 						# Match flags and end
 						m = re_regex_flags.match(self.text, p + 1);
 						p = m.end();
 						break;
-				elif (c == "["):
+				elif (c == u"["):
 					bracketed = True;
-				elif (c == "]"):
+				elif (c == u"]"):
 					bracketed = False;
 				elif (string_contains_newline(c)):
 					break;
@@ -262,7 +262,7 @@ def gen(lex):
 
 			if (b.token_id == self.token_id - 1 and not b.opener):
 				t = b.other.before;
-				if (t.type == self.descriptor.KEYWORD and t.text in [ "if" , "for" , "while" ]):
+				if (t.type == self.descriptor.KEYWORD and t.text in [ u"if" , u"for" , u"while" ]):
 					# Probably valid
 					return True;
 
@@ -311,7 +311,7 @@ def gen(lex):
 		return self.create_token(t_info[0], t_info[1], t_info[2]);
 
 	# Create descriptor
-	descriptor.define_state_names([ "DEFAULT" ]);
+	descriptor.define_state_names([ u"DEFAULT" ]);
 	descriptor.define_state([ # state 0
 		[
 			lex.check_regex(u"\\s+"), # whitespace
@@ -342,8 +342,8 @@ def gen(lex):
 	def string_splitlines(text):
 		return re_newlines_split.split(text);
 
-	setattr(descriptor, "string_contains_newline", string_contains_newline);
-	setattr(descriptor, "string_splitlines", string_splitlines);
+	setattr(descriptor, u"string_contains_newline", string_contains_newline);
+	setattr(descriptor, u"string_splitlines", string_splitlines);
 
 	# Complete
 	return descriptor;

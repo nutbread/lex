@@ -7,125 +7,125 @@ import re;
 def gen(lex):
 	# Language descriptor
 	descriptor = lex.Descriptor([
-		"IGNORE",
-		"MEMBER",
-		"NEXT_IS_MEMBER",
-		"NEXT_NO_OP_PREFIX",
-		"START_STRING",
-		"STRING_TRIPLE",
-		"START_COMMENT",
-		"BRACKET",
-		"BRACKET_CLOSE",
-	], "IGNORE");
+		u"IGNORE",
+		u"MEMBER",
+		u"NEXT_IS_MEMBER",
+		u"NEXT_NO_OP_PREFIX",
+		u"START_STRING",
+		u"STRING_TRIPLE",
+		u"START_COMMENT",
+		u"BRACKET",
+		u"BRACKET_CLOSE",
+	], u"IGNORE");
 	flags = descriptor.flags;
 	descriptor.define_types({
-		"INVALID": 0,
-		"KEYWORD": 0,
-		"IDENTIFIER": flags.NEXT_NO_OP_PREFIX,
-		"NUMBER": flags.NEXT_NO_OP_PREFIX,
-		"STRING": flags.NEXT_NO_OP_PREFIX,
-		"OPERATOR": 0,
-		"WHITESPACE": flags.IGNORE,
-		"COMMENT": flags.IGNORE,
+		u"INVALID": 0,
+		u"KEYWORD": 0,
+		u"IDENTIFIER": flags.NEXT_NO_OP_PREFIX,
+		u"NUMBER": flags.NEXT_NO_OP_PREFIX,
+		u"STRING": flags.NEXT_NO_OP_PREFIX,
+		u"OPERATOR": 0,
+		u"WHITESPACE": flags.IGNORE,
+		u"COMMENT": flags.IGNORE,
 	});
 	keywords = {
-		"and": 0,
-		"as": 0,
-		"assert": 0,
-		"break": 0,
-		"class": 0,
-		"continue": 0,
-		"def": 0,
-		"del": 0,
-		"elif": 0,
-		"else": 0,
-		"except": 0,
-		"finally": 0,
-		"for": 0,
-		"from": 0,
-		"global": 0,
-		"if": 0,
-		"import": 0,
-		"in": 0,
-		"is": 0,
-		"lambda": 0,
-		"nonlocal": 0,
-		"not": 0,
-		"or": 0,
-		"pass": 0,
-		"raise": 0,
-		"return": 0,
-		"try": 0,
-		"while": 0,
-		"with": 0,
-		"yield": 0,
+		u"and": 0,
+		u"as": 0,
+		u"assert": 0,
+		u"break": 0,
+		u"class": 0,
+		u"continue": 0,
+		u"def": 0,
+		u"del": 0,
+		u"elif": 0,
+		u"else": 0,
+		u"except": 0,
+		u"finally": 0,
+		u"for": 0,
+		u"from": 0,
+		u"global": 0,
+		u"if": 0,
+		u"import": 0,
+		u"in": 0,
+		u"is": 0,
+		u"lambda": 0,
+		u"nonlocal": 0,
+		u"not": 0,
+		u"or": 0,
+		u"pass": 0,
+		u"raise": 0,
+		u"return": 0,
+		u"try": 0,
+		u"while": 0,
+		u"with": 0,
+		u"yield": 0,
 	};
 	operators = lex.tree({
-		">>=": 0,
-		">>": 0,
-		">=": 0,
-		">": 0,
+		u">>=": 0,
+		u">>": 0,
+		u">=": 0,
+		u">": 0,
 
-		"<<=": 0,
-		"<<": 0,
-		"<=": 0,
-		"<": 0,
-		"<>": 0,
+		u"<<=": 0,
+		u"<<": 0,
+		u"<=": 0,
+		u"<": 0,
+		u"<>": 0,
 
-		"==": 0,
-		"=": 0,
+		u"==": 0,
+		u"=": 0,
 
-		"!=": 0,
+		u"!=": 0,
 
-		"&=": 0,
-		"&": 0,
+		u"&=": 0,
+		u"&": 0,
 
-		"|=": 0,
-		"|": 0,
+		u"|=": 0,
+		u"|": 0,
 
-		"+=": 0,
-		"+": 0,
+		u"+=": 0,
+		u"+": 0,
 
-		"-=": 0,
-		"-": 0,
+		u"-=": 0,
+		u"-": 0,
 
-		"**=": 0,
-		"**": 0,
-		"*=": 0,
-		"*": 0,
+		u"**=": 0,
+		u"**": 0,
+		u"*=": 0,
+		u"*": 0,
 
-		"//=": 0,
-		"//": 0,
-		"/=": 0,
-		"/": 0,
+		u"//=": 0,
+		u"//": 0,
+		u"/=": 0,
+		u"/": 0,
 
-		"%=": 0,
-		"%": 0,
+		u"%=": 0,
+		u"%": 0,
 
-		"^=": 0,
-		"^": 0,
+		u"^=": 0,
+		u"^": 0,
 
-		"~": 0,
-		":": 0,
-		";": 0,
-		",": 0,
-		".": flags.NEXT_IS_MEMBER | flags.NEXT_NO_OP_PREFIX,
-		"...": 0,
+		u"~": 0,
+		u":": 0,
+		u";": 0,
+		u",": 0,
+		u".": flags.NEXT_IS_MEMBER | flags.NEXT_NO_OP_PREFIX,
+		u"...": 0,
 
-		"\\": 0,
+		u"\\": 0,
 
-		"(": flags.BRACKET,
-		"[": flags.BRACKET,
-		"{": flags.BRACKET,
-		")": flags.BRACKET | flags.BRACKET_CLOSE | flags.NEXT_NO_OP_PREFIX,
-		"]": flags.BRACKET | flags.BRACKET_CLOSE | flags.NEXT_NO_OP_PREFIX,
-		"}": flags.BRACKET | flags.BRACKET_CLOSE,
+		u"(": flags.BRACKET,
+		u"[": flags.BRACKET,
+		u"{": flags.BRACKET,
+		u")": flags.BRACKET | flags.BRACKET_CLOSE | flags.NEXT_NO_OP_PREFIX,
+		u"]": flags.BRACKET | flags.BRACKET_CLOSE | flags.NEXT_NO_OP_PREFIX,
+		u"}": flags.BRACKET | flags.BRACKET_CLOSE,
 
-		"#": flags.START_COMMENT,
-		"\"": flags.START_STRING,
-		"\"\"\"": flags.START_STRING | flags.STRING_TRIPLE,
-		"\'": flags.START_STRING,
-		"\'\'\'": flags.START_STRING | flags.STRING_TRIPLE,
+		u"#": flags.START_COMMENT,
+		u"\"": flags.START_STRING,
+		u"\"\"\"": flags.START_STRING | flags.STRING_TRIPLE,
+		u"\'": flags.START_STRING,
+		u"\'\'\'": flags.START_STRING | flags.STRING_TRIPLE,
 	});
 
 	# Matching logic
@@ -147,7 +147,7 @@ def gen(lex):
 			c = self.text[p];
 			if (escaped):
 				escaped = False;
-				if (c == "\r" and p + 1 < p_max and self.text[p + 1] == "\n"):
+				if (c == u"\r" and p + 1 < p_max and self.text[p + 1] == u"\n"):
 					p += 1;
 			else:
 				if (c == quote):
@@ -157,7 +157,7 @@ def gen(lex):
 						break;
 				else:
 					quote_count = 0;
-					if (c == "\\"):
+					if (c == u"\\"):
 						escaped = True;
 					elif (string_contains_newline(c) and quote_length == 1):
 						break;
@@ -211,7 +211,7 @@ def gen(lex):
 		return self.create_token(t_info[0], t_info[1], t_info[2]);
 
 	# Create descriptor
-	descriptor.define_state_names([ "DEFAULT" ]);
+	descriptor.define_state_names([ u"DEFAULT" ]);
 	descriptor.define_state([ # state 0
 		[
 			lex.check_regex(u"\\s+"), # whitespace
@@ -242,8 +242,8 @@ def gen(lex):
 	def string_splitlines(text):
 		return re_newlines_split.split(text);
 
-	setattr(descriptor, "string_contains_newline", string_contains_newline);
-	setattr(descriptor, "string_splitlines", string_splitlines);
+	setattr(descriptor, u"string_contains_newline", string_contains_newline);
+	setattr(descriptor, u"string_splitlines", string_splitlines);
 
 	# Complete
 	return descriptor;
